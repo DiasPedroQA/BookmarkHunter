@@ -1,42 +1,47 @@
 name: CI Pipeline
 
+# Define os gatilhos para a execução da pipeline
 on:
   push:
     branches:
-      - main
+      - main  # A pipeline será executada sempre que houver um push para a branch 'main'
   pull_request:
     branches:
-      - main
+      - main  # A pipeline também será executada quando houver um PR para a branch 'main'
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Define que o ambiente de execução será o Ubuntu mais recente
 
     steps:
+    # 1. Checkout do código - Faz o checkout do repositório para o ambiente de execução
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v2  # Ação para fazer o checkout do código mais recente do repositório
 
+    # 2. Configuração do Python - Instala a versão necessária do Python
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v2  # Ação para configurar a versão do Python
       with:
-        python-version: '3.10'  # Defina a versão do Python que você está usando
+        python-version: '3.10'  # Define a versão do Python que será usada no ambiente
 
+    # 3. Instalação das dependências - Cria o ambiente virtual e instala as dependências do projeto
     - name: Install dependencies
       run: |
-        python -m venv .venv
-        source .venv/bin/activate
-        pip install -r requirements.txt  # Instalar as dependências, incluindo pytest
+        python -m venv .venv  # Cria um ambiente virtual chamado '.venv'
+        source .venv/bin/activate  # Ativa o ambiente virtual
+        pip install -r requirements.txt  # Instala as dependências listadas no arquivo 'requirements.txt'
 
+    # 4. Execução dos testes com pytest - Roda os testes definidos no projeto
     - name: Run tests with pytest
       run: |
-        source .venv/bin/activate  # Garantir que o ambiente virtual está ativado
-        pytest
+        source .venv/bin/activate  # Garante que o ambiente virtual está ativado
+        pytest  # Executa os testes com o pytest
 
-    # Adicionar coverage
+    # 5. Adicionar cobertura de testes - Gera um relatório de cobertura de testes
     - name: Generate coverage report
       run: |
-        source .venv/bin/activate  # Garantir que o ambiente virtual está ativado
-        pytest --cov=src/
-        coverage html
-        coverage report
-        coverage xml
+        source .venv/bin/activate  # Garante que o ambiente virtual está ativado
+        pytest --cov=src/  # Executa os testes com cobertura para a pasta 'src'
+        coverage html  # Gera o relatório de cobertura em formato HTML
+        coverage report  # Exibe o relatório de cobertura no terminal
+        coverage xml  # Gera o relatório de cobertura em formato XML (útil para integração com ferramentas de CI)

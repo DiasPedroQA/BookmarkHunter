@@ -1,35 +1,67 @@
 {
     // Configurações do corretor ortográfico para o projeto
     "cSpell.words": [
-        // Ferramentas e tecnologias
-        "celerybeat",        // Celery scheduler
-        "Connor",            // Nome do autor de pyflow
-        "cython",            // Ferramenta para compilação em C
-        "dmypy",             // MyPy Daemon
-        "github",            // GitHub
-        "htmlcov",           // Relatórios HTML de cobertura de testes
-        "ipynb",             // Notebooks Jupyter
-        "itsdangerous",      // Biblioteca de segurança para Flask
-        "mkdocs",            // Ferramenta de documentação
-        "mypy",              // Type checking em Python
-        "nosetests",         // Framework de testes
-        "pipenv",            // Gerenciador de dependências
-        "Pipfile",           // Arquivo de configuração do Pipenv
-        "pycache",           // Cache compilado de Python
-        "pyenv",             // Gerenciador de versões Python
-        "pyflow",            // Gerenciador de dependências PEP 582
-        "pypa",              // Python Packaging Authority
-        "pypackages",        // Diretório padrão PEP 582
-        "pytype",            // Verificador de tipos estático
-        "ropeproject",       // Configuração do Rope
-        "scrapy",            // Framework de scraping
-        "sdist",             // Source distribution
-        "Spyder",            // IDE Python
-        "spyderproject",     // Configuração do Spyder
-        "spyproject",        // Configuração alternativa do Spyder
-        "venv",              // Diretório de ambientes virtuais
-        "webassets",         // Gerenciamento de assets web
-        "Werkzeug"           // Biblioteca WSGI para Flask
+        "abstractproperty",
+        "adicao",
+        "analyse",
+        "Analyse",
+        "analysed",
+        "argparse",
+        "asdict",
+        "booleaness",
+        "celerybeat",
+        "classmethod",
+        "Connor",
+        "contextlib",
+        "contextmanager",
+        "criacao",
+        "cython",
+        "dmypy",
+        "docstrings",
+        "github",
+        "htmlcov",
+        "inlinevar",
+        "ipynb",
+        "isort",
+        "itsdangerous",
+        "ixin",
+        "jsonify",
+        "metaclass",
+        "mkdocs",
+        "modificacao",
+        "msvs",
+        "mymodule",
+        "mypackage",
+        "mypy",
+        "noqa",
+        "nosec",
+        "nosetests",
+        "optparse",
+        "overgeneral",
+        "parseable",
+        "pipenv",
+        "Pipfile",
+        "Posix",
+        "pycache",
+        "pyenv",
+        "pyflow",
+        "pygtk",
+        "pypa",
+        "pypackages",
+        "pytype",
+        "rgxs",
+        "ropeproject",
+        "scrapy",
+        "sdist",
+        "Spyder",
+        "spyderproject",
+        "spyproject",
+        "toto",
+        "typealias",
+        "typevar",
+        "venv",
+        "webassets",
+        "Werkzeug"
     ],
 
     // Ignorar verificações de arquivos dentro de __pycache__
