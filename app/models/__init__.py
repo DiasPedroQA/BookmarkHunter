@@ -13,7 +13,11 @@ Todos os modelos são importados neste módulo para facilitar o acesso.
 """
 
 from .bookmark_model import TagProcessor
-from .file_model import Arquivo
-from .folder_model import Pasta
+# from .file_model import Arquivo
+# from .folder_model import Pasta
 
-__all__ = ["TagProcessor", "Arquivo", "Pasta"]
+__all__ = [
+    "TagProcessor",
+    # "Arquivo",
+    # "Pasta"
+]
