@@ -1,9 +1,9 @@
-"""
-Este módulo contém testes para a rota home da API.
+# """
+# Este módulo contém testes para a rota home da API.
 
-Classes:
-    TestHomeRoute: Testa a rota home da API.
-"""
+# Classes:
+#     TestHomeRoute: Testa a rota home da API.
+# """
 
 # import pytest
 # from flask import Flask

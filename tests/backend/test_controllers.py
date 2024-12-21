@@ -1,10 +1,10 @@
-"""
-Testes para o controlador de análise de bookmark.
+# """
+# Testes para o controlador de análise de bookmark.
 
-Este módulo contém testes para o controlador de análise de bookmark.
-Classes:
-    TestBookmarkAnalyzer: Testa o controlador de análise de bookmark.
-"""
+# Este módulo contém testes para o controlador de análise de bookmark.
+# Classes:
+#     TestBookmarkAnalyzer: Testa o controlador de análise de bookmark.
+# """
 
 # from app.controllers.bookmark_analyzer import analyze_bookmark
 
