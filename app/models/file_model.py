@@ -1,4 +1,6 @@
 # app/models/file_model.py
+# pylint: disable=E0401
+
 
 """
 Este módulo define a classe `Arquivo`, que representa um arquivo com atributos como 
@@ -17,7 +19,7 @@ Métodos:
 """
 
 from typing import Optional
-from app.models.folder_model import Pasta
+from folder_model import Pasta
 
 
 class Arquivo:

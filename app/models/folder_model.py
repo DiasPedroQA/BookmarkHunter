@@ -1,4 +1,5 @@
 # app/models/folder_model.py
+# pylint: disable=C
 
 """
 Este módulo define a classe `Pasta`, que representa uma pasta contendo arquivos e 
