@@ -21,6 +21,7 @@
         "docstrings",
         "github",
         "htmlcov",
+        "indentação",
         "inlinevar",
         "ipynb",
         "isort",
