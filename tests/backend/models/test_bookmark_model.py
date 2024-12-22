@@ -1,69 +1,156 @@
-# Criando os testes com testes com ferramenta alternativa
+# tests/backend/models/test_bookmark_model.py
 
-# import pytest
-# from app.models import Bookmark, File
-# from app.models.bookmark_model import Bookmark
+"""
+Testes para o modelo de Bookmark
+"""
 
+import json
+import os
+import sys
+from app.models.bookmark_model import TagProcessor
 
-# def test_bookmark_initialization():
-#     bookmark = Bookmark("Example Title", "http://example.com")
-#     assert bookmark.title == "Example Title"
-#     assert bookmark.url == "http://example.com"
-#     assert bookmark.file is None
-
-# def test_bookmark_with_file():
-#     bookmark = Bookmark("Example Title", "http://example.com", file="example_file.txt")
-#     assert bookmark.file == "example_file.txt"
-
-# def test_bookmark_repr():
-#     bookmark = Bookmark("Example Title", "http://example.com")
-#     assert repr(bookmark) == "<Bookmark(title=Example Title, url=http://example.com)>"
-
-# def test_bookmark_title_change():
-#     bookmark = Bookmark("Old Title", "http://example.com")
-#     bookmark.title = "New Title"
-#     assert bookmark.title == "New Title"
-
-# def test_bookmark_url_change():
-#     bookmark = Bookmark("Example Title", "http://old-url.com")
-#     bookmark.url = "http://new-url.com"
-#     assert bookmark.url == "http://new-url.com"
+# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas
+sys.path.append(
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__), '../../')))
 
 
-# Criando os testes com o CHATGPT
+# Teste para o processamento de múltiplas tags <h3> e <a> em sequência
+def test_processar_multiple_tags():
+    """
+    Testa o processamento de múltiplas tags <h3> e <a> em sequência.
+    """
+    html = """
+    <html>
+        <body>
+            <DT><H3 ADD_DATE="1686621554" LAST_MODIFIED="1721823235">Estudos</H3>
+        <DL><p>
+            <DT><A HREF="https://dev.to/leandronsp/pt-br-fundamentos-do-git-um-guia-completo-2djh" ADD_DATE="1686055702" ICON="data:image/png;base64,...">[pt-BR] Fundamentos do Git, um guia completo - DEV Community</A>
+            <DT><H3 ADD_DATE="1686621554" LAST_MODIFIED="1721823235">Estudos</H3>
+        <DL><p>
+            <DT><A HREF="https://martinfowler.com/articles/practical-test-pyramid.html" ADD_DATE="1691737793" ICON="data:image/png;base64,...">A Pirâmide do Teste Prático</A>
+        </body>
+    </html>
+    """
+    processor = TagProcessor(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado)
 
-# def test_create_bookmark():
-#     # Criar um arquivo
-#     file = File(name="example_file")
+    # Verificando a primeira tag <h3>
+    tag_h3_1 = resultado_dict["tag_1"]
+    assert tag_h3_1["tag_name"] == "<h3>"
+    assert tag_h3_1["text_content"] == "Estudos"
+    assert tag_h3_1["add_date"] == "13/06/2023 01:59:14"
+    assert tag_h3_1["last_modified"] == "24/07/2024 12:13:55"
 
-#     # Criar um bookmark associado ao arquivo
-#     bookmark = Bookmark(title="Example Bookmark", url="https://example.com")
-#     file.add_bookmark(bookmark)
+    # Verificando a primeira tag <a>
+    tag_a_1 = resultado_dict["tag_2"]
+    assert tag_a_1["tag_name"] == "<a>"
+    assert tag_a_1["text_content"] == "[pt-BR] Fundamentos do Git, um guia completo - DEV Community"
+    assert tag_a_1["add_date"] == "06/06/2023 12:48:22"
+    assert tag_a_1["href"] == "https://dev.to/leandronsp/pt-br-fundamentos-do-git-um-guia-completo-2djh"
 
-#     # Verificar o bookmark
-#     assert bookmark.title == "Example Bookmark"
-#     assert bookmark.url == "https://example.com"
-#     assert bookmark.file == file
-#     assert bookmark in file.bookmarks
+    # Verificando a segunda tag <h3>
+    tag_h3_2 = resultado_dict["tag_3"]
+    assert tag_h3_2["tag_name"] == "<h3>"
+    assert tag_h3_2["text_content"] == "Estudos"
+    assert tag_h3_2["add_date"] == "13/06/2023 01:59:14"
+    assert tag_h3_2["last_modified"] == "24/07/2024 12:13:55"
 
-# def test_bookmark_initialization_with_no_file():
-#     bookmark = Bookmark("No File Title", "http://no-file.com")
-#     assert bookmark.file is None
+    # Verificando a segunda tag <a>
+    tag_a_2 = resultado_dict["tag_4"]
+    assert tag_a_2["tag_name"] == "<a>"
+    assert tag_a_2["text_content"] == "A Pirâmide do Teste Prático"
+    assert tag_a_2["add_date"] == "11/08/2023 07:09:53"
+    assert tag_a_2["href"] == "https://martinfowler.com/articles/practical-test-pyramid.html"
 
-# def test_bookmark_repr_with_file():
-#     file = "example_file.txt"
-#     bookmark = Bookmark("File Title", "http://file-url.com", file=file)
-#     assert repr(bookmark) == "<Bookmark(title=File Title, url=http://file-url.com)>"
+# Teste para o processamento de tags <h3> com múltiplos atributos ADD_DATE e LAST_MODIFIED
+def test_processar_multiple_attributes():
+    """
+    Testa o processamento de tags <h3> com múltiplos atributos ADD_DATE e LAST_MODIFIED.
+    """
+    html = """
+    <h3 ADD_DATE="1686621554" LAST_MODIFIED="1721823235">Estudos</h3>
+    <h3 ADD_DATE="1708744361" LAST_MODIFIED="1731234567">Projetos</h3>
+    """
+    processor = TagProcessor(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado)
 
-# def test_bookmark_title_empty_string():
-#     bookmark = Bookmark("", "http://empty-title.com")
-#     assert bookmark.title == ""
+    # Verificando o primeiro <h3>
+    tag_h3_1 = resultado_dict["tag_1"]
+    assert tag_h3_1["tag_name"] == "<h3>"
+    assert tag_h3_1["text_content"] == "Estudos"
+    assert tag_h3_1["add_date"] == "13/06/2023 01:59:14"
+    assert tag_h3_1["last_modified"] == "24/07/2024 12:13:55"
 
-# def test_bookmark_url_invalid_format():
-#     bookmark = Bookmark("Invalid URL", "invalid-url")
-#     assert bookmark.url == "invalid-url"
+    # Verificando o segundo <h3>
+    tag_h3_2 = resultado_dict["tag_2"]
+    assert tag_h3_2["tag_name"] == "<h3>"
+    assert tag_h3_2["text_content"] == "Projetos"
+    assert tag_h3_2["add_date"] == "24/02/2024 03:12:41"
+    assert tag_h3_2["last_modified"] == "10/11/2024 10:29:27"
 
-# def test_bookmark_title_length_exceeding_limit():
-#     long_title = "A" * 256
-#     bookmark = Bookmark(long_title, "http://long-title.com")
-#     assert bookmark.title == long_title
+# Teste para o processamento de tags <a> sem atributos ADD_DATE
+def test_processar_tag_a_sem_add_date():
+    """
+    Testa o processamento de tags <a> sem o atributo ADD_DATE.
+    """
+    html = """
+    <a href="https://example.com">Link do item sem data</a>
+    """
+    processor = TagProcessor(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado)
+
+    # Verificando a tag <a> sem ADD_DATE
+    tag_a = resultado_dict["tag_1"]
+    assert tag_a["tag_name"] == "<a>"
+    assert tag_a["text_content"] == "Link do item sem data"
+    assert tag_a["add_date"] is not None  # Deve atribuir um valor padrão
+    assert tag_a["href"] == "https://example.com"
+    assert "last_modified" not in tag_a
+
+# Teste para tratamento de data inválida em ADD_DATE
+def test_processar_add_date_invalido():
+    """
+    Testa o processamento de ADD_DATE com valor inválido.
+    """
+    html = """
+    <h3 ADD_DATE="invalid_date">Título com data inválida</h3>
+    """
+    processor = TagProcessor(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado)
+
+    # Verificando a tag <h3>
+    tag_h3 = resultado_dict["tag_1"]
+    assert tag_h3["add_date"] == "Formato inválido"  # A data deve ser tratada como inválida
+
+# Teste para o processamento de tags <a> e <h3> sem ADD_DATE e LAST_MODIFIED
+def test_processar_tag_sem_data():
+    """
+    Testa o processamento de tags <a> e <h3> sem ADD_DATE ou LAST_MODIFIED.
+    """
+    html = """
+    <h3>Título sem data</h3>
+    <a href="https://example.com">Link sem data</a>
+    """
+    processor = TagProcessor(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado, strict=False)
+
+    # Verificando a tag <h3>
+    tag_h3 = resultado_dict["tag_1"]
+    print(f"\n\ntag_h3 => {tag_h3}")
+    assert tag_h3["text_content"] == "Título sem data"
+    assert tag_h3["add_date"] is not None  # Deve atribuir data padrão
+    # assert tag_h3["last_modified"] == "Formato inválido"
+
+    # Verificando a tag <a>
+    tag_a = resultado_dict["tag_2"]
+    print(f"\n\ntag_a => {tag_a}")
+    assert tag_a["text_content"] == "Link sem data"
+    assert tag_a["add_date"] is not None  # Deve atribuir data padrão
+    assert tag_a["href"] == "https://example.com"
