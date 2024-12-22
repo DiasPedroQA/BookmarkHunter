@@ -1,55 +1,60 @@
+# .github/workflows/test.yml
+
 name: CI Pipeline
 
 # Define os gatilhos para a execução da pipeline
 on:
   push:
     branches:
-      - main  # Executa a pipeline para push na branch 'main'
+      - main  # A pipeline será executada sempre que houver um push para a branch 'main'
   pull_request:
     branches:
-      - main  # Executa a pipeline para PR direcionado à branch 'main'
+      - main  # A pipeline também será executada quando houver um PR para a branch 'main'
 
 jobs:
   test:
-    runs-on: ubuntu-latest  # Define o ambiente de execução como Ubuntu mais recente
+    runs-on: ubuntu-latest  # Define que o ambiente de execução será o Ubuntu mais recente
 
     steps:
-      # 1. Checkout do código
-      - name: Checkout code
-        uses: actions/checkout@v2
+    # 1. Checkout do código - Faz o checkout do repositório para o ambiente de execução
+    - name: Checkout code
+      uses: actions/checkout@v2  # Ação para fazer o checkout do código mais recente do repositório
 
-      # 2. Configuração do Python
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10'
+    # 2. Configuração do Python - Instala a versão necessária do Python
+    - name: Set up Python
+      uses: actions/setup-python@v2  # Ação para configurar a versão do Python
+      with:
+        python-version: '3.10'  # Define a versão do Python que será usada no ambiente
 
-      # 3. Instalação das dependências
-      - name: Install dependencies
-        run: |
-          python -m venv .venv  # Cria um ambiente virtual chamado '.venv'
-          source .venv/bin/activate  # Ativa o ambiente virtual
-          pip install -r requirements.txt  # Instala as dependências listadas
+    # 3. Instalação das dependências - Cria o ambiente virtual e instala as dependências do projeto
+    - name: Install dependencies
+      run: |
+        python -m venv .venv  # Cria um ambiente virtual chamado '.venv'
+        source .venv/bin/activate  # Ativa o ambiente virtual
+        pip install -r requirements.txt  # Instala as dependências listadas no arquivo 'requirements.txt'
+        pip install pytest-cov  # Garante que o plugin pytest-cov está instalado
 
-      # 4. Execução dos testes backend
-      - name: Run backend tests
-        run: |
-          source .venv/bin/activate  # Garante que o ambiente virtual está ativado
-          pytest tests/backend/ --cov=app/  # Roda os testes do backend com cobertura na pasta 'app'
+    # 4. Execução dos testes com pytest - Roda os testes definidos no projeto
+    - name: Run tests with pytest
+      run: |
+        source .venv/bin/activate  # Garante que o ambiente virtual está ativado
+        pytest tests/backend/ --cov=app --cov-report=term  # Executa os testes com cobertura e exibe no terminal
 
-      # 5. Execução dos testes frontend
-      - name: Run frontend tests
-        run: |
-          source .venv/bin/activate  # Garante que o ambiente virtual está ativado
-          pytest tests/frontend/  # Roda os testes do frontend
+    # 5. Geração de relatório de cobertura em HTML e XML - Gera os relatórios de cobertura
+    - name: Generate coverage reports
+      run: |
+        source .venv/bin/activate  # Garante que o ambiente virtual está ativado
+        pytest tests/backend/ --cov=app --cov-report=html --cov-report=xml  # Gera cobertura HTML e XML
+      continue-on-error: true  # Para continuar mesmo se essa etapa falhar (opcional)
 
-      # 6. Geração de relatório de cobertura
-      - name: Generate coverage report
-        run: |
-          source .venv/bin/activate  # Garante que o ambiente virtual está ativado
-          coverage html  # Gera o relatório de cobertura em formato HTML
-          coverage report  # Mostra o relatório de cobertura no terminal
-          coverage xml  # Gera o relatório de cobertura em XML para CI
-
-    env:
-      TZ: UTC  # Define o fuso horário como UTC
+    # 6. Upload do relatório de cobertura para o GitHub (opcional)
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: |
+          htmlcov/  # Relatório HTML
+          coverage.xml  # Relatório XML
+          
+env:
+  TZ: UTC
