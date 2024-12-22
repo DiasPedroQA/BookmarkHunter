@@ -100,6 +100,7 @@ class TagProcessor:
 
 
 # Exemplo de uso
+# pylint: disable=C0301
 # if __name__ == "__main__":
 #     HTML_TESTE = """
 #     <html>
