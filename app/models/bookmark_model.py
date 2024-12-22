@@ -7,7 +7,7 @@ Classe para processar tags HTML e extrair informações relevantes.
 from typing import Dict
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 from bs4 import BeautifulSoup
 
@@ -50,9 +50,10 @@ class TagProcessor:
         """
         try:
             timestamp_int = int(timestamp)
-            if timestamp_int <= 0:
-                raise ValueError("Timestamp inválido")
-            data_formatada = datetime.fromtimestamp(timestamp_int).strftime(
+            data_formatada = datetime.fromtimestamp(
+                timestamp_int,
+                tz=timezone.utc
+            ).strftime(
                 "%d/%m/%Y %H:%M:%S"
             )
             return data_formatada

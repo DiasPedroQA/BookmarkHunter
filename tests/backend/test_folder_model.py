@@ -24,8 +24,8 @@ def test_processar_tag_h3():
     tag_h3 = resultado_dict["tag_1"]
     assert tag_h3["tag_name"] == "h3"
     assert tag_h3["text_content"] == "Título da lista"
-    assert tag_h3["add_date"] == "13/09/2024 22:49:25"  # Verifique o timestamp correto
-    assert tag_h3["last_modified"] == "13/09/2024 22:49:25"
+    assert tag_h3["add_date"] == "14/09/2024 01:49:25"  # Horário em UTC
+    assert tag_h3["last_modified"] == "14/09/2024 01:49:25"
     assert "href" not in tag_h3  # Não deve ter o atributo href
 
 
@@ -45,7 +45,7 @@ def test_processar_tag_a():
     tag_a = resultado_dict["tag_1"]
     assert tag_a["tag_name"] == "a"
     assert tag_a["text_content"] == "Link do item"
-    assert tag_a["add_date"] == "24/02/2024 00:12:41"  # Verifique o timestamp correto
+    assert tag_a["add_date"] == "24/02/2024 03:12:41"  # Verifique o timestamp correto
     assert tag_a["href"] == "https://example.com"
     assert "last_modified" not in tag_a  # Não deve ter o atributo last_modified
 

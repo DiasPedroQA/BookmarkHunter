@@ -45,3 +45,5 @@ jobs:
         coverage html  # Gera o relatório de cobertura em formato HTML
         coverage report  # Exibe o relatório de cobertura no terminal
         coverage xml  # Gera o relatório de cobertura em formato XML (útil para integração com ferramentas de CI)
+env:
+  TZ: UTC
