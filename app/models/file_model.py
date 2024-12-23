@@ -1,95 +1,153 @@
-# app/models/file_model.py
-# pylint: disable=E0401
+# # app/models/file_model.py
+# # pylint: disable=C, R0902
+
+import os
+import sys
+from pathlib import Path
+import platform
+from typing import Optional, Dict
+
+# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+
+from app.models.bookmark_model import ObjetoTag
+from app.utils.conversores import ConversoresUtils
+from app.utils.geradores import Geradores
 
 
-"""
-Este módulo define a classe `Arquivo`, que representa um arquivo com atributos como 
-nome, caminho, datas de criação e modificação, e um relacionamento com a pasta e 
-marcadores associados.
+class ObjetoArquivo:
+    def __init__(self, caminho: str):
+        self.caminho_atual = Path(caminho)
+        self.conversores = ConversoresUtils()
+        self.geradores = Geradores()
+        self.caminho_absoluto = self.obter_caminho_absoluto()
 
-A classe permite associar marcadores ao arquivo e gerenciar suas informações.
+    def _eh_caminho_absoluto(self) -> bool:
+        """Verifica se o caminho é absoluto."""
+        try:
+            caminho_absoluto = self.caminho_atual.is_absolute()
+            return caminho_absoluto
+        except ValueError:
+            return False
 
-Classes:
-    - Arquivo: Representa um arquivo com dados e marcadores associados.
+    def _obter_tamanho_arquivo(self) -> Optional[str]:
+        """Obtém o tamanho de um arquivo em bytes."""
+        try:
+            return self.conversores.converter_tamanho_arquivo(tamanho_arquivo=self.caminho_atual.stat().st_size)
+        except FileNotFoundError:
+            return None
 
-Métodos:
-    - __init__: Inicializa o objeto Arquivo.
-    - add_bookmark: Associa um marcador ao arquivo.
-    - __repr__: Retorna uma representação em string do Arquivo.
-"""
+    def obter_caminho_absoluto(self) -> Optional[Path]:
+        """Obtém o caminho absoluto a partir do caminho atual."""
+        if self._eh_caminho_absoluto():
+            return self.caminho_atual
+        try:
+            return self.caminho_atual.resolve()
+        except FileNotFoundError:
+            return None
 
-from typing import Optional
-from folder_model import Pasta
+    def obter_informacoes_arquivo(self) -> Dict[str, Optional[str]]:
+        """Obtém informações detalhadas sobre o arquivo."""
+        informacoes_arquivo = {}
+        if self.caminho_absoluto and self.caminho_absoluto.exists():
+            # Informações sobre o caminho
+            informacoes_arquivo['id_arquivo'] = self.geradores.gerar_id()
+            informacoes_arquivo['sistema_operacional'] = platform.system()
+            informacoes_arquivo['caminho_absoluto'] = str(self.caminho_absoluto)
+            informacoes_arquivo['nome_arquivo'] = self.caminho_atual.name
+            informacoes_arquivo['extensao_arquivo'] = self.caminho_atual.suffix
+            informacoes_arquivo['diretorio_pai'] = self.obter_diretorio_pai()
+            informacoes_arquivo['caminho_relativo'] = str(self.caminho_atual.relative_to(Path("/home/pedro-pm-dias")))
+            informacoes_arquivo['is_file'] = self.caminho_atual.is_file()
+            informacoes_arquivo['is_dir'] = self.caminho_atual.is_dir()
+            informacoes_arquivo['tamanho_arquivo'] = self.conversores.converter_tamanho_arquivo(
+                tamanho_arquivo=self.caminho_atual.stat().st_size
+            )
+        return informacoes_arquivo
+
+    def obter_diretorio_pai(self) -> Optional[Path]:
+        """Obtém o diretório pai de um caminho."""
+        return self.caminho_atual.parent
+
+    def verificar_existencia_arquivo(self) -> bool:
+        """Verifica se o arquivo existe."""
+        try:
+            caminho_existente = self.caminho_atual.exists()
+            return caminho_existente
+        except (FileExistsError, FileNotFoundError):
+            print("O arquivo não existe.")
+            return None
+
+    def obter_datas_arquivo(self) -> Optional[str]:
+        """Obtém a data de criação e de modificação de um arquivo."""
+        try:
+            data_criacao = self.caminho_atual.stat().st_ctime
+            data_modificacao = self.caminho_atual.stat().st_mtime
+            return self.conversores.converter_timestamps_arquivo(ctime = data_criacao, mtime = data_modificacao)
+        except FileNotFoundError:
+            return None
+
+    # def __criar_novo_caminho(self, nome_arquivo: str) -> Path:
+    #     """Cria um novo caminho a partir do diretório e nome de arquivo."""
+    #     return self.caminho_atual.parent / nome_arquivo
+
+    def ler_arquivo(self) -> Optional[str]:
+        """Lê o conteúdo de um arquivo."""
+        try:
+            with open(self.caminho_atual, 'r', encoding="utf-8") as arquivo_lido:
+                conteudo_tags = arquivo_lido.read()
+                processos = ObjetoTag(conteudo_tags)
+                return processos.processar_tags()
+        except FileNotFoundError:
+            return None
+
+    def criar_novo_arquivo(self, conteudo_arquivo: str) -> bool:
+        """Escreve conteúdo em um arquivo."""
+        try:
+            with open(self.caminho_atual, 'w', encoding="utf-8") as arquivo_novo:
+                arquivo_novo.write(conteudo_arquivo)
+            return True
+        except FileNotFoundError:
+            return False
+
+    # def __renomear_arquivo(self, sufixo: str, nova_extensao: str) -> Optional[Path]:
+    #     """Renomeia um arquivo, incluindo um sufixo e nova extensão."""
+    #     novo_nome = self.caminho_atual.stem + sufixo + nova_extensao
+    #     novo_path = self.caminho_atual.parent / novo_nome
+    #     self.caminho_atual.rename(novo_path)
+    #     return novo_path
+
+    # def __mover_arquivo(self, destino: str) -> Optional[Path]:
+    #     """Move um arquivo para um novo caminho."""
+    #     novo_path = Path(destino) / self.caminho_atual.name
+    #     self.caminho_atual.replace(novo_path)
+    #     return novo_path
 
 
-class Arquivo:
-    """
-    Representa um arquivo com atributos como nome, caminho, datas de criação e
-    modificação, pasta mãe e tamanho, além de um relacionamento opcional com a 
-    pasta e uma lista de marcadores associados.
+# Exemplo de uso
+caminho_exemplo = "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
+file_manager = ObjetoArquivo(caminho_exemplo)
 
-    Atributos:
-        nome (str): O nome do arquivo.
-        caminho (str, opcional): O caminho do arquivo no sistema de arquivos.
-        data_criacao (str, opcional): A data de criação do arquivo, em formato de string.
-        data_modificacao (str, opcional): A data da última modificação do arquivo, em formato de string.
-        pasta_mae (str, opcional): A pasta onde o arquivo está localizado.
-        tamanho (int, opcional): O tamanho do arquivo.
-        caminho_absoluto (str, opcional): O caminho absoluto do arquivo.
-        pasta (Optional["Pasta"], opcional): A pasta associada ao arquivo, caso exista.
-        bookmarks (list, opcional): Lista de marcadores associados a este arquivo.
-    """
+# Obtendo informações do arquivo
+informacoes = file_manager.obter_informacoes_arquivo()
+print("Informações do arquivo:", informacoes)
 
-    def __init__(
-        self,
-        nome: str,
-        caminho: Optional[str] = None,
-        data_criacao: Optional[str] = None,
-        data_modificacao: Optional[str] = None,
-        pasta_mae: Optional[str] = None,
-        tamanho: Optional[int] = None,
-        caminho_absoluto: str = None,
-        pasta: Optional["Pasta"] = None,
-    ):
-        """
-        Inicializa um objeto Arquivo.
+# Obtendo a data de modificação do arquivo
+datas = file_manager.obter_datas_arquivo()
+print(f"Datas de criação e modificação: {datas}")
 
-        Args:
-            nome (str): O nome do arquivo.
-            caminho (str, opcional): O caminho do arquivo no sistema de arquivos.
-            data_criacao (str, opcional): A data de criação do arquivo, em formato de string.
-            data_modificacao (str, opcional): A data da última modificação do arquivo, em formato de string.
-            pasta_mae (str, opcional): A pasta onde o arquivo está localizado.
-            tamanho (int, opcional): O tamanho do arquivo.
-            caminho_absoluto (str, opcional): O caminho absoluto do arquivo.
-            pasta (Pasta, opcional): A pasta associada ao arquivo, caso exista.
-        """
-        self.nome = nome
-        self.caminho = caminho
-        self.data_criacao = data_criacao
-        self.data_modificacao = data_modificacao
-        self.pasta_mae = pasta_mae
-        self.tamanho = tamanho
-        self.caminho_absoluto = caminho_absoluto
-        self.pasta = pasta  # Relacionamento com a pasta
-        self.bookmarks = []  # Lista para armazenar os bookmarks associados
+# # Lendo o conteúdo do arquivo
+# conteudo = file_manager.__ler_arquivo()
+# print(f"Conteúdo do arquivo: {conteudo}...")  # Exibindo as primeiras 100 linhas
 
-    def add_bookmark(self, marcador):
-        """
-        Adiciona um marcador à lista de bookmarks do arquivo e cria o relacionamento 
-        com o arquivo.
+# # Escrevendo no arquivo
+# if file_manager.__criar_novo_arquivo("Novo conteúdo"):
+#     print("Conteúdo escrito com sucesso.")
 
-        Args:
-            marcador (Marcador): O marcador a ser associado a este arquivo.
-        """
-        self.bookmarks.append(marcador)
-        marcador.arquivo = self
+# # Renomeando o arquivo
+# novo_nome_arquivo = file_manager.__renomear_arquivo("_processado", ".html")
+# print(f"Arquivo renomeado para: {novo_nome_arquivo}")
 
-    def __repr__(self) -> str:
-        """
-        Retorna uma representação em string do objeto Arquivo.
-
-        Returns:
-            str: Representação do objeto.
-        """
-        return f"<Arquivo(nome={self.nome})>"
+# # Movendo o arquivo
+# novo_caminho_move = file_manager.__mover_arquivo("/novo/caminho")
+# print(f"Arquivo movido para: {novo_caminho_move}")

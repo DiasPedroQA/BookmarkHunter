@@ -1,18 +1,17 @@
 # app/models/bookmark_model.py
 
-
 """
 Módulo para processar tags HTML e extrair informações relevantes.
-Este módulo fornece a classe TagProcessor para extrair e formatar dados de tags <h3> e <a> em documentos HTML.
+Este módulo fornece a classe ObjetoTag para extrair e formatar dados de tags <h3> e <a> em documentos HTML.
 
 Classes:
-    TagProcessor: Processa tags HTML e converte os dados extraídos em JSON.
+    ObjetoTag: Processa tags HTML e converte os dados extraídos em JSON.
 
-Exemplo de uso:
-    html = '''<html><body><h3>Título</h3><a href="https://example.com">Link</a></body></html>'''
-    processor = TagProcessor(html)
-    resultado = processor.processar_tags()
-    print(resultado)
+Métodos:
+    processar_tags(html: str) -> str: Processa as tags HTML e retorna os dados em formato JSON.
+    _extrair_tags(self) -> ResultSet[Tag]: Extrai tags <h3> e <a> do HTML.
+    _processar_tag(self, tag: Tag) -> Dict[str, str]: Processa uma tag específica e retorna os dados formatados.
+    
 """
 
 import sys
@@ -20,17 +19,18 @@ import os
 from typing import Dict
 import json
 from bs4 import BeautifulSoup, Tag, ResultSet
-from app.utils.conversores import formatar_timestamp
-from app.utils.geradores import gerar_id
 
 # Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas
+# pylint: disable=C0413
 sys.path.append(
     os.path.abspath(
         os.path.join(
             os.path.dirname(__file__), '../../')))
 
+from app.utils.conversores import ConversoresUtils
+from app.utils.geradores import Geradores
 
-class TagProcessor:
+class ObjetoTag:
     """
     Classe para processar tags HTML e extrair informações relevantes.
 
@@ -54,6 +54,8 @@ class TagProcessor:
         """
         self.html = html
         self.tags: ResultSet[Tag] = self._extrair_tags()
+        self.geradores = Geradores()
+        self.conversores = ConversoresUtils()
 
     def _extrair_tags(self) -> ResultSet[Tag]:
         """
@@ -77,14 +79,16 @@ class TagProcessor:
         """
         tag_attrs = {chave.lower(): valor for chave, valor in tag.attrs.items()}
         tag_data = {
-            "id": gerar_id(),
+            "id": self.geradores.gerar_id(),
             "tag_name": f"<{tag.name}>",
             "text_content": tag.text.strip(),
-            "add_date": formatar_timestamp(tag_attrs.get("add_date", "")),
+            "add_date": self.conversores.converter_timestamp_tag(tag_timestamp=tag_attrs.get("add_date", "")),
         }
 
         if tag.name == "h3":
-            tag_data["last_modified"] = formatar_timestamp(tag_attrs.get("last_modified", ""))
+            tag_data["last_modified"] = self.conversores.converter_timestamp_tag(
+                tag_timestamp=tag_attrs.get("last_modified", "")
+            )
         elif tag.name == "a":
             tag_data["href"] = tag_attrs.get("href", None)
 
@@ -120,6 +124,6 @@ class TagProcessor:
 #     </html>
 #     """
 
-#     processador = TagProcessor(html=HTML_TESTE)
+#     processador = ObjetoTag(html=HTML_TESTE)
 #     resultado_processado = processador.processar_tags()
 #     print(resultado_processado)

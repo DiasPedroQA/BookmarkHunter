@@ -7,7 +7,7 @@ Testes para o modelo de Bookmark
 import json
 import os
 import sys
-from app.models.bookmark_model import TagProcessor
+from app.models.bookmark_model import ObjetoTag
 
 # Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas
 sys.path.append(
@@ -33,7 +33,7 @@ def test_processar_multiple_tags():
         </body>
     </html>
     """
-    processor = TagProcessor(html)
+    processor = ObjetoTag(html)
     resultado = processor.processar_tags()
     resultado_dict = json.loads(resultado)
 
@@ -65,6 +65,7 @@ def test_processar_multiple_tags():
     assert tag_a_2["add_date"] == "11/08/2023 07:09:53"
     assert tag_a_2["href"] == "https://martinfowler.com/articles/practical-test-pyramid.html"
 
+
 # Teste para o processamento de tags <h3> com múltiplos atributos ADD_DATE e LAST_MODIFIED
 def test_processar_multiple_attributes():
     """
@@ -74,7 +75,7 @@ def test_processar_multiple_attributes():
     <h3 ADD_DATE="1686621554" LAST_MODIFIED="1721823235">Estudos</h3>
     <h3 ADD_DATE="1708744361" LAST_MODIFIED="1731234567">Projetos</h3>
     """
-    processor = TagProcessor(html)
+    processor = ObjetoTag(html)
     resultado = processor.processar_tags()
     resultado_dict = json.loads(resultado)
 
@@ -92,6 +93,7 @@ def test_processar_multiple_attributes():
     assert tag_h3_2["add_date"] == "24/02/2024 03:12:41"
     assert tag_h3_2["last_modified"] == "10/11/2024 10:29:27"
 
+
 # Teste para o processamento de tags <a> sem atributos ADD_DATE
 def test_processar_tag_a_sem_add_date():
     """
@@ -100,7 +102,7 @@ def test_processar_tag_a_sem_add_date():
     html = """
     <a href="https://example.com">Link do item sem data</a>
     """
-    processor = TagProcessor(html)
+    processor = ObjetoTag(html)
     resultado = processor.processar_tags()
     resultado_dict = json.loads(resultado)
 
@@ -112,6 +114,7 @@ def test_processar_tag_a_sem_add_date():
     assert tag_a["href"] == "https://example.com"
     assert "last_modified" not in tag_a
 
+
 # Teste para tratamento de data inválida em ADD_DATE
 def test_processar_add_date_invalido():
     """
@@ -120,13 +123,14 @@ def test_processar_add_date_invalido():
     html = """
     <h3 ADD_DATE="invalid_date">Título com data inválida</h3>
     """
-    processor = TagProcessor(html)
+    processor = ObjetoTag(html)
     resultado = processor.processar_tags()
     resultado_dict = json.loads(resultado)
 
     # Verificando a tag <h3>
     tag_h3 = resultado_dict["tag_1"]
     assert tag_h3["add_date"] == "Formato inválido"  # A data deve ser tratada como inválida
+
 
 # Teste para o processamento de tags <a> e <h3> sem ADD_DATE e LAST_MODIFIED
 def test_processar_tag_sem_data():
@@ -137,7 +141,7 @@ def test_processar_tag_sem_data():
     <h3>Título sem data</h3>
     <a href="https://example.com">Link sem data</a>
     """
-    processor = TagProcessor(html)
+    processor = ObjetoTag(html)
     resultado = processor.processar_tags()
     resultado_dict = json.loads(resultado, strict=False)
 
@@ -154,3 +158,75 @@ def test_processar_tag_sem_data():
     assert tag_a["text_content"] == "Link sem data"
     assert tag_a["add_date"] is not None  # Deve atribuir data padrão
     assert tag_a["href"] == "https://example.com"
+
+
+# Teste para o processamento de tags <h3> com atributos ausentes
+def test_processar_tag_h3_sem_atributos():
+    html = """
+    <h3>Título sem atributos</h3>
+    """
+    processor = ObjetoTag(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado)
+
+    tag_h3 = resultado_dict["tag_1"]
+    assert tag_h3["tag_name"] == "<h3>"
+    assert tag_h3["text_content"] == "Título sem atributos"
+    assert tag_h3["add_date"] is not None  # Deve atribuir data padrão
+    assert "last_modified" not in tag_h3
+
+
+# Teste para o processamento de múltiplas tags <a> com atributos diferentes
+def test_processar_multiple_a_tags():
+    html = """
+    <a href="https://example1.com" ADD_DATE="1686055702">Link 1</a>
+    <a href="https://example2.com" ADD_DATE="1686055703">Link 2</a>
+    """
+    processor = ObjetoTag(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado)
+
+    tag_a_1 = resultado_dict["tag_1"]
+    assert tag_a_1["tag_name"] == "<a>"
+    assert tag_a_1["text_content"] == "Link 1"
+    assert tag_a_1["add_date"] == "06/06/2023 12:48:22"
+    assert tag_a_1["href"] == "https://example1.com"
+
+    tag_a_2 = resultado_dict["tag_2"]
+    assert tag_a_2["tag_name"] == "<a>"
+    assert tag_a_2["text_content"] == "Link 2"
+    assert tag_a_2["add_date"] == "06/06/2023 12:48:23"
+    assert tag_a_2["href"] == "https://example2.com"
+
+
+# Teste para o processamento de tags <h3> com um único atributo
+def test_processar_tag_h3_com_unico_atributo():
+    html = """
+    <h3 ADD_DATE="1686621554">Título com único atributo</h3>
+    """
+    processor = ObjetoTag(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado)
+
+    tag_h3 = resultado_dict["tag_1"]
+    assert tag_h3["tag_name"] == "<h3>"
+    assert tag_h3["text_content"] == "Título com único atributo"
+    assert tag_h3["add_date"] == "13/06/2023 01:59:14"
+    assert "last_modified" not in tag_h3
+
+
+# Teste para o processamento de tags <a> com atributos não padrão
+def test_processar_tag_a_com_atributos_nao_padrao():
+    html = """
+    <a href="https://example.com" custom_attr="value">Link com atributo não padrão</a>
+    """
+    processor = ObjetoTag(html)
+    resultado = processor.processar_tags()
+    resultado_dict = json.loads(resultado)
+
+    tag_a = resultado_dict["tag_1"]
+    assert tag_a["tag_name"] == "<a>"
+    assert tag_a["text_content"] == "Link com atributo não padrão"
+    assert tag_a["add_date"] is not None  # Deve atribuir um valor padrão
+    assert tag_a["href"] == "https://example.com"
+    assert "last_modified" not in tag_a
