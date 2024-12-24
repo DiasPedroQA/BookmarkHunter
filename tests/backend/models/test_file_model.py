@@ -4,7 +4,15 @@
 Testes para o modelo do objeto Arquivo.
 """
 
+import os
+import sys
 from pathlib import Path
+
+
+# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas  # pylint: disable=C0413
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+
+
 from app.models.file_model import ObjetoArquivo
 # from app.models.bookmark_model import ObjetoTag
 
