@@ -19,10 +19,8 @@ As funções deste módulo são projetadas para simplificar o processamento de d
 diretórios e conteúdos de HTML/JSON.
 """
 
-
 from pathlib import Path
 from datetime import datetime
-import json
 from typing import Dict
 from bs4 import BeautifulSoup
 
@@ -33,140 +31,222 @@ class ConversoresUtils:
     contagem de itens em pastas, e extração de informações de arquivos e HTML.
     """
 
-    def __init__(self):
-        pass
+    def converter_timestamp_tag(self, tag_timestamp: int | str) -> str:
+        """
+        Converte um timestamp Unix para o formato legível.
 
-    # Métodos públicos
+        Args:
+            tag_timestamp (int | str): O timestamp Unix a ser convertido.
 
-    def converter_timestamp_tag(self, tag_timestamp: str) -> str:
-        """Converte um timestamp Unix para o formato DD/MM/YYYY HH:mm:ss."""
-        return self._converter_timestamp(tag_timestamp)
+        Returns:
+            str: O timestamp no formato "DD/MM/YYYY HH:mm:ss".
 
-    def converter_timestamps_arquivo(self, ctime: float, mtime: float) -> Dict[str, str]:
-        """Converte timestamps de criação e modificação de arquivos para formato legível."""
-        return {
-            "data_criacao": self._formatar_data(ctime),
-            "data_modificacao": self._formatar_data(mtime),
-        }
+        Raises:
+            ValueError: Se o timestamp não for um número válido.
 
-    def converter_tamanho_arquivo(self, tamanho_arquivo: str) -> str:
-        """Converte o tamanho de um arquivo em bytes para uma unidade legível."""
-        return self._converter_tamanho_arquivo(tamanho_arquivo)
-
-    def converter_tamanho_pasta(self, caminho_pasta: str) -> str:
-        """Calcula e converte o tamanho total de uma pasta."""
-        return self._converter_tamanho_pasta(caminho_pasta)
-
-    def contar_arquivos_pasta(self, caminho_pasta: str) -> int:
-        """Conta a quantidade de arquivos dentro de uma pasta."""
-        return self._contar_arquivos_pasta(caminho_pasta)
-
-    def contar_links_html(self, html: str) -> int:
-        """Conta o número de links (<a>) em um documento HTML."""
-        return self._contar_links_html(html)
-
-    def extrair_titulo_html(self, html: str) -> str:
-        """Extrai o conteúdo da tag <title> de um documento HTML."""
-        return self._extrair_titulo_html(html)
-
-    def contar_chaves_json(self, caminho_json: str) -> int:
-        """Conta o número de chaves em um arquivo JSON."""
-        return self._contar_chaves_json(caminho_json)
-
-    # Métodos privados
-
-    def _formatar_data(self, timestamp: float) -> str:
-        """Formata um timestamp Unix para o formato DD/MM/YYYY HH:mm:ss"""
+        Exemplo:
+            >>> utils = ConversoresUtils()
+            >>> utils.converter_timestamp_tag(1686621554)
+            '13/06/2023 15:25:54'
+        """
+        if tag_timestamp == "":
+            return "Data não disponível"  # Ou algum valor padrão
         try:
-            return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
-        except (ValueError, TypeError) as e:
-            return f"Erro ao formatar data: {str(e)}"
+            timestamp = int(tag_timestamp)
+            return self._formatar_data(timestamp)
+        except ValueError as exc:
+            raise ValueError(
+                "Timestamp inválido. Deve ser um inteiro ou string numérica."
+            ) from exc
 
-    def _converter_timestamp(self, tag_timestamp: str) -> str:
-        """Converte um timestamp Unix em formato string para o formato legível."""
+    def converter_timestamp_arquivo(
+        self, timestamp_criacao_arquivo: float, timestamp_modificacao_arquivo: float
+    ) -> Dict[str, str]:
+        """
+        Converte dois timestamps Unix para formatos legíveis.
+
+        Args:
+            timestamp_criacao_arquivo (float): Timestamp de criação do arquivo.
+            timestamp_modificacao_arquivo (float): Timestamp de modificação do arquivo.
+
+        Returns:
+            dict: Dicionário com os timestamps convertidos nos formatos legíveis.
+
+        Raises:
+            ValueError: Se os timestamps forem inválidos.
+
+        Exemplo:
+            >>> utils = ConversoresUtils()
+            >>> utils.converter_timestamp_arquivo(1686621554.0, 1686621600.0)
+            {'timestamp_criacao': '13/06/2023 15:25:54', 'timestamp_modificacao': '13/06/2023 15:26:40'}
+        """
         try:
-            timestamp_int = int(tag_timestamp)
-            return self._formatar_data(timestamp_int)
-        except (ValueError, TypeError) as e:
-            return f"Erro ao converter timestamp: {str(e)}"
+            timestamp_criacao = float(timestamp_criacao_arquivo)
+            timestamp_modificacao = float(timestamp_modificacao_arquivo)
+            return {
+                "timestamp_criacao": self._formatar_data(timestamp_criacao),
+                "timestamp_modificacao": self._formatar_data(timestamp_modificacao),
+            }
+        except ValueError as exc:
+            raise ValueError(
+                "Timestamps inválidos. Devem ser números flutuantes válidos."
+            ) from exc
 
-    def _converter_tamanho_arquivo(self, tamanho_arquivo: str) -> str:
-        """Converte o tamanho de arquivo em bytes para formato legível (KB, MB, GB, etc.)."""
-        try:
-            tamanho_arquivo = float(tamanho_arquivo)
-            if tamanho_arquivo < 1024:
-                return f"{tamanho_arquivo:.2f} B"
-            elif tamanho_arquivo < 1024**2:
-                return f"{tamanho_arquivo / 1024:.2f} KB"
-            elif tamanho_arquivo < 1024**3:
-                return f"{tamanho_arquivo / 1024**2:.2f} MB"
-            elif tamanho_arquivo < 1024**4:
-                return f"{tamanho_arquivo / 1024**3:.2f} GB"
-            else:
-                return f"{tamanho_arquivo / 1024**4:.2f} TB"
-        except (ValueError, TypeError) as e:
-            return f"Erro ao converter tamanho de arquivo: {str(e)}"
+    def converter_tamanho_arquivo(self, tamanho_bytes: int | float) -> str:
+        """
+        Converte o tamanho de um arquivo em bytes para uma unidade legível.
 
-    def _converter_tamanho_pasta(self, caminho_pasta: str) -> str:
-        """Calcula o tamanho total de uma pasta."""
-        try:
-            caminho_pasta = Path(caminho_pasta)
-            tamanho_total = sum(f.stat().st_size for f in caminho_pasta.rglob('*') if f.is_file())
-            return self._converter_tamanho_arquivo(str(tamanho_total))
-        except (OSError, IOError) as e:
-            return f"Erro ao calcular o tamanho da pasta: {str(e)}"
+        Args:
+            tamanho_bytes (int | float): Tamanho em bytes do arquivo.
 
-    def _contar_arquivos_pasta(self, caminho_pasta: str) -> int:
-        """Conta a quantidade de arquivos em uma pasta."""
-        try:
-            caminho_pasta = Path(caminho_pasta)
-            quantidade_arquivos = sum(1 for _ in caminho_pasta.rglob('*') if _.is_file())
-            return quantidade_arquivos
-        except FileNotFoundError:
-            return f"A pasta '{caminho_pasta}' não foi encontrada."
-        except PermissionError:
-            return f"Permissão negada para acessar a pasta '{caminho_pasta}'."
-        except OSError as e:
-            return f"Erro no sistema de arquivos ao acessar a pasta '{caminho_pasta}': {str(e)}"
-        except TypeError as e:
-            return f"Erro inesperado ao contar os arquivos na pasta '{caminho_pasta}': {str(e)}"
+        Returns:
+            str: O tamanho formatado com a unidade apropriada (B, KB, MB, etc.).
 
-    def _contar_links_html(self, html: str) -> int:
-        """Conta o número de links (<a>) em um documento HTML."""
-        try:
-            soup = BeautifulSoup(html, "html.parser")
-            links = soup.find_all("a")
-            return len(links)
-        except (AttributeError, ValueError) as e:
-            return f"Erro ao contar links no HTML: {str(e)}"
+        Raises:
+            TypeError: Se o valor não for um número inteiro ou float.
 
-    def _extrair_titulo_html(self, html: str) -> str:
-        """Extrai o conteúdo da tag <title> de um documento HTML."""
-        try:
-            soup = BeautifulSoup(html, "html.parser")
-            titulo = soup.title.string if soup.title else "Tag <title> não encontrada"
-            return titulo
-        except AttributeError:
-            return "Erro ao acessar a tag <title> no HTML."
-        except ValueError as e:
-            return f"Erro ao processar o HTML: {str(e)}"
-        except TypeError as e:
-            return f"Erro inesperado ao extrair o título do HTML: {str(e)}"
+        Exemplo:
+            >>> utils = ConversoresUtils()
+            >>> utils.converter_tamanho_arquivo(1024)
+            '1.00 KB'
+        """
+        if not isinstance(tamanho_bytes, (int, float)):
+            raise TypeError("O tamanho deve ser um número inteiro ou float.")
+        return self._converter_tamanho_bytes(tamanho_bytes)
 
-    def _contar_chaves_json(self, caminho_json: str) -> int:
-        """Conta o número de chaves em um arquivo JSON."""
-        try:
-            with open(caminho_json, "r", encoding="utf-8") as f:
-                dados = json.load(f)
-            return len(dados)
-        except (IOError, json.JSONDecodeError) as e:
-            return f"Erro ao contar chaves no JSON: {str(e)}"
+    def converter_tamanho_pasta(self, pasta_caminho: str) -> str:
+        """
+        Calcula e converte o tamanho total de uma pasta.
+
+        Args:
+            pasta_caminho (str): Caminho para a pasta.
+
+        Returns:
+            str: O tamanho total da pasta formatado com a unidade apropriada.
+
+        Raises:
+            FileNotFoundError: Se a pasta não for encontrada.
+            ValueError: Se a pasta estiver vazia.
+        """
+        caminho = Path(pasta_caminho)
+        if not caminho.is_dir():
+            raise FileNotFoundError(f"A pasta '{pasta_caminho}' não foi encontrada.")
+        tamanho_total = sum(f.stat().st_size for f in caminho.rglob("*") if f.is_file())
+        if tamanho_total == 0:
+            raise ValueError(f"A pasta '{pasta_caminho}' está vazia.")
+        return self._converter_tamanho_bytes(tamanho_total)
+
+    def contar_arquivos_pasta(self, pasta_caminho: str) -> int:
+        """
+        Conta a quantidade de arquivos dentro de uma pasta.
+
+        Args:
+            pasta_caminho (str): Caminho para a pasta.
+
+        Returns:
+            int: O número de arquivos na pasta.
+
+        Raises:
+            FileNotFoundError: Se a pasta não for encontrada.
+
+        Exemplo:
+            >>> utils = ConversoresUtils()
+            >>> utils.contar_arquivos_pasta("/caminho/para/pasta")
+            42
+        """
+        caminho = Path(pasta_caminho)
+        if not caminho.is_dir():
+            raise FileNotFoundError(f"A pasta '{pasta_caminho}' não foi encontrada.")
+        return sum(1 for _ in caminho.rglob("*") if _.is_file())
+
+    def contar_links_html(self, html_conteudo: str) -> int:
+        """
+        Conta o número de links (<a>) em um documento HTML.
+
+        Args:
+            html_conteudo (str): Conteúdo HTML como string.
+
+        Returns:
+            int: O número de tags <a> no HTML.
+
+        Raises:
+            ValueError: Se o HTML fornecido estiver vazio ou inválido.
+        """
+        if not html_conteudo.strip():
+            raise ValueError("O conteúdo do HTML está vazio ou inválido.")
+        soup = BeautifulSoup(html_conteudo, "html.parser")
+        return len(soup.find_all("a"))
+
+    def extrair_titulo_html(self, html_conteudo: str) -> str:
+        """
+        Extrai o conteúdo da tag <title> de um documento HTML.
+
+        Args:
+            html_conteudo (str): Conteúdo HTML como string.
+
+        Returns:
+            str: O conteúdo da tag <title> ou "Sem título" se não encontrado.
+
+        Exemplo:
+            >>> utils = ConversoresUtils()
+            >>> html = "<html><head><title>Minha Página</title></head><body></body></html>"
+            >>> utils.extrair_titulo_html(html)
+            'Minha Página'
+        """
+        soup = BeautifulSoup(html_conteudo, "html.parser")
+        return soup.title.string if soup.title else "Sem título"
+
+    # Métodos utilitários (privados)
+
+    @staticmethod
+    def _formatar_data(timestamp: int) -> str:
+        """
+        Formata um timestamp Unix para o formato DD/MM/YYYY HH:mm:ss.
+
+        Args:
+            timestamp (int): O timestamp Unix.
+
+        Returns:
+            str: O timestamp formatado.
+
+        Exemplo:
+            >>> ConversoresUtils._formatar_data(1686621554)
+            '13/06/2023 15:25:54'
+        """
+        return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
+
+    @staticmethod
+    def _converter_tamanho_bytes(tamanho: int | float) -> str:
+        """
+        Converte tamanhos em bytes para unidades legíveis.
+
+        Args:
+            tamanho (int | float): O tamanho em bytes.
+
+        Returns:
+            str: O tamanho formatado com a unidade apropriada.
+
+        Raises:
+            ValueError: Se o tamanho for negativo.
+        """
+        if tamanho < 0:
+            raise ValueError("O tamanho em bytes não pode ser negativo.")
+        for unidade in ["B", "KB", "MB", "GB", "TB"]:
+            if tamanho < 1024:
+                return f"{tamanho:.2f} {unidade}"
+            tamanho /= 1024
+        return f"{tamanho:.2f} TB"
 
 
-# Exemplo de uso da classe ConversoresUtils
+# # Exemplo de uso da classe ConversoresUtils  # pylint: disable=C0301
 
-# HTML de exemplo  # pylint: disable=C0301
-# HTML = """
+# # Criação de uma instância da classe ConversoresUtils
+# conversores = ConversoresUtils()
+
+# # Dados de exemplo para o uso da classe
+
+# # HTML de exemplo
+# HTML_EXEMPLO = """
 # <!DOCTYPE NETSCAPE-Bookmark-file-1>
 # <!--
 #     This is an automatically generated file.
@@ -189,24 +269,37 @@ class ConversoresUtils:
 # </html>
 # """
 
-# Criação de uma instância da classe ConversoresUtils
-# conversores = ConversoresUtils()
+# # Timestamp inteiro de uso do objeto Tag para data de criação
+# TIMESTAMP_CRIACAO = "1686621554"
 
-# Exemplo de conversão de timestamps
-# TIMESTAMP_CRIACAO = "1686621554"  # Timestamp UNIX de exemplo
-# TIMESTAMP_MODIFICACAO = "1721823235"  # Timestamp UNIX de exemplo
+# # Tamanho de arquivo em bytes
+# TAMANHO_ARQUIVO = 1234567890
 
-# Convertendo timestamps para o formato legível
+# # Caminho da pasta
+# CAMINHO_PASTA = "/home/pedro-pm-dias/Downloads/"
+
+# # Exemplos de uso dos métodos da classe ConversoresUtils
+
+# # Converte timestamps para o formato legível
 # timestamp_criacao_formatado = conversores.converter_timestamp_tag(TIMESTAMP_CRIACAO)
-# timestamp_modificacao_formatado = conversores.converter_timestamp_tag(TIMESTAMP_MODIFICACAO)
+# print(f"Timestamp de criação formatado: {timestamp_criacao_formatado}")
 
-# print(f"Data de criação: {timestamp_criacao_formatado}")
-# print(f"Data de modificação: {timestamp_modificacao_formatado}")
+# # Converte tamanho de arquivo
+# tamanho_formatado = conversores.converter_tamanho_arquivo(TAMANHO_ARQUIVO)
+# print(f"Tamanho do arquivo formatado: {tamanho_formatado}")
 
-# Exemplo de contagem de links no HTML
-# numero_links = conversores.contar_links_html(HTML)
-# print(f"Número de links no HTML: {numero_links}")
+# # Converte tamanho de pasta
+# tamanho_pasta_formatado = conversores.converter_tamanho_pasta(CAMINHO_PASTA)
+# print(f"Tamanho da pasta formatado: {tamanho_pasta_formatado}")
 
-# Exemplo de extração do título do HTML
-# titulo_html = conversores.extrair_titulo_html(HTML)
-# print(f"Título do HTML: {titulo_html}")
+# # Conta arquivos em uma pasta
+# quantidade_arquivos = conversores.contar_arquivos_pasta(CAMINHO_PASTA)
+# print(f"Quantidade de arquivos na pasta: {quantidade_arquivos}")
+
+# # Conta links em HTML
+# quantidade_links = conversores.contar_links_html(HTML_EXEMPLO)
+# print(f"Quantidade de links no HTML: {quantidade_links}")
+
+# # Extrai título de HTML
+# titulo_html = conversores.extrair_titulo_html(HTML_EXEMPLO)
+# print(f"Título extraído do HTML: {titulo_html}")

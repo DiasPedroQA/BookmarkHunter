@@ -33,7 +33,7 @@ class ObjetoArquivo:
     def _obter_tamanho_arquivo(self) -> Optional[str]:
         """Obtém o tamanho de um arquivo em bytes."""
         try:
-            return self.conversores.converter_tamanho_arquivo(tamanho_arquivo=self.caminho_atual.stat().st_size)
+            return self.conversores.converter_tamanho_arquivo(tamanho_bytes=self.caminho_atual.stat().st_size)
         except FileNotFoundError:
             return None
 
@@ -61,7 +61,7 @@ class ObjetoArquivo:
             informacoes_arquivo['is_file'] = self.caminho_atual.is_file()
             informacoes_arquivo['is_dir'] = self.caminho_atual.is_dir()
             informacoes_arquivo['tamanho_arquivo'] = self.conversores.converter_tamanho_arquivo(
-                tamanho_arquivo=self.caminho_atual.stat().st_size
+                tamanho_bytes=self.caminho_atual.stat().st_size
             )
         return informacoes_arquivo
 
@@ -83,13 +83,12 @@ class ObjetoArquivo:
         try:
             data_criacao = self.caminho_atual.stat().st_ctime
             data_modificacao = self.caminho_atual.stat().st_mtime
-            return self.conversores.converter_timestamps_arquivo(ctime = data_criacao, mtime = data_modificacao)
+            return self.conversores.converter_timestamp_arquivo(
+                timestamp_criacao_arquivo=data_criacao,
+                timestamp_modificacao_arquivo=data_modificacao
+            )
         except FileNotFoundError:
             return None
-
-    # def __criar_novo_caminho(self, nome_arquivo: str) -> Path:
-    #     """Cria um novo caminho a partir do diretório e nome de arquivo."""
-    #     return self.caminho_atual.parent / nome_arquivo
 
     def ler_arquivo(self) -> Optional[str]:
         """Lê o conteúdo de um arquivo."""
@@ -109,6 +108,10 @@ class ObjetoArquivo:
             return True
         except FileNotFoundError:
             return False
+
+    # def __criar_novo_caminho(self, nome_arquivo: str) -> Path:
+    #     """Cria um novo caminho a partir do diretório e nome de arquivo."""
+    #     return self.caminho_atual.parent / nome_arquivo
 
     # def __renomear_arquivo(self, sufixo: str, nova_extensao: str) -> Optional[Path]:
     #     """Renomeia um arquivo, incluindo um sufixo e nova extensão."""

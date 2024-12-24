@@ -14,21 +14,10 @@ Métodos:
     
 """
 
-import sys
-import os
-from typing import Dict
 import json
+from typing import Dict
 from bs4 import BeautifulSoup, Tag, ResultSet
 
-# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas
-# pylint: disable=C0413
-sys.path.append(
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__), '../../')))
-
-from app.utils.conversores import ConversoresUtils
-from app.utils.geradores import Geradores
 
 class ObjetoTag:
     """
@@ -37,32 +26,25 @@ class ObjetoTag:
     Args:
         html (str): O HTML a ser processado.
 
-    Atributos:
-        html (str): O HTML fornecido para processamento.
-        tags (ResultSet[Tag]): Conjunto de tags extraídas do HTML.
-
     Métodos:
-        processar_tags: Processa todas as tags extraídas e retorna os dados em JSON.
+        processar_tags: Processa tags <h3> e <a> e retorna os dados em JSON.
     """
 
     def __init__(self, html: str):
         """
-        Inicializa a classe com o HTML fornecido e extrai as tags relevantes.
+        Inicializa a classe com o HTML fornecido.
 
         Args:
             html (str): O conteúdo HTML a ser processado.
         """
         self.html = html
-        self.tags: ResultSet[Tag] = self._extrair_tags()
-        self.geradores = Geradores()
-        self.conversores = ConversoresUtils()
 
     def _extrair_tags(self) -> ResultSet[Tag]:
         """
-        Extrai tags <a> e <h3> do HTML usando BeautifulSoup.
+        Extrai tags <h3> e <a> do HTML usando BeautifulSoup.
 
         Returns:
-            ResultSet[Tag]: Uma lista de objetos Tag contendo as tags extraídas.
+            ResultSet[Tag]: Lista de tags extraídas.
         """
         soup = BeautifulSoup(self.html, "html.parser")
         return soup.find_all(["h3", "a"])
@@ -75,41 +57,30 @@ class ObjetoTag:
             tag (Tag): A tag HTML a ser processada.
 
         Returns:
-            Dict[str, str]: Um dicionário com os dados processados da tag.
+            Dict[str, str]: Dados formatados da tag.
         """
-        tag_attrs = {chave.lower(): valor for chave, valor in tag.attrs.items()}
-        tag_data = {
-            "id": self.geradores.gerar_id(),
-            "tag_name": f"<{tag.name}>",
-            "text_content": tag.text.strip(),
-            "add_date": self.conversores.converter_timestamp_tag(tag_timestamp=tag_attrs.get("add_date", "")),
+        return {
+            "tag_name": tag.name,
+            "text_content": tag.get_text(strip=True) or "",
+            "attributes": {k.lower(): v for k, v in tag.attrs.items()},
         }
-
-        if tag.name == "h3":
-            tag_data["last_modified"] = self.conversores.converter_timestamp_tag(
-                tag_timestamp=tag_attrs.get("last_modified", "")
-            )
-        elif tag.name == "a":
-            tag_data["href"] = tag_attrs.get("href", None)
-
-        return {chave: valor for chave, valor in tag_data.items() if valor}
 
     def processar_tags(self) -> str:
         """
-        Processa todas as tags extraídas e retorna os dados em formato JSON.
+        Processa tags <h3> e <a> e retorna os dados em formato JSON.
 
         Returns:
-            str: Um JSON com as informações processadas das tags.
+            str: JSON com as informações das tags processadas.
         """
+        tags = self._extrair_tags()
         resultado = {
-            f"tag_{idx + 1}": self._processar_tag(tag)
-            for idx, tag in enumerate(self.tags)
+            f"tag_{i + 1}": self._processar_tag(tag) for i, tag in enumerate(tags)
         }
         return json.dumps(resultado, indent=4, ensure_ascii=False)
 
 
+# # Exemplo de uso com HTML de teste
 # if __name__ == "__main__":
-#     # Exemplo de uso com HTML de teste
 #     # pylint: disable=C0301
 #     HTML_TESTE = """
 #     <html>

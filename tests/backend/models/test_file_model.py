@@ -1,5 +1,9 @@
 # tests/backend/models/test_file_model.py
 
+"""
+Testes para o modelo do objeto Arquivo.
+"""
+
 from pathlib import Path
 from app.models.file_model import ObjetoArquivo
 # from app.models.bookmark_model import ObjetoTag

@@ -1,202 +1,208 @@
 # app/utils/geradores.py
 
 """
-Arquivo de utilidades para geração de dados úteis para o projeto.
+Módulo com a classe `Geradores` que oferece métodos para criar e
+manipular arquivos simulados e conteúdo HTML em memória.
+A classe permite gerar IDs únicos, criar e manipular arquivos e
+pastas simuladas, e gerar tags HTML com atributos personalizados.
+
+Métodos principais:
+- Gerar IDs únicos com base no timestamp.
+- Criar, ler, atualizar e deletar arquivos e pastas simuladas.
+- Criar e manipular tags HTML com atributos personalizados.
+
+Exemplo de uso:
+    gerador = Geradores()
+    id_arquivo = gerador.criar_arquivo('teste.txt', 'Conteúdo do arquivo')
+    html_atualizado = gerador.criar_tag_html('p', 'Texto de parágrafo', {'class': 'paragrafo'})
 """
 
 import hashlib
 import time
-from typing import Optional
+from typing import Optional, List, Dict
 from bs4 import BeautifulSoup
 
 
 class Geradores:
     """
-    A classe `Geradores` fornece um conjunto de métodos utilitários para gerar
-    e gerenciar arquivos simulados, pastas e conteúdo HTML em memória.
-    Ela foi projetada para ser usada como uma classe auxiliar dentro de uma aplicação maior.
-    
-    O método `__init__` inicializa a classe com armazenamento em memória para arquivos simulados,
-    pastas e conteúdo HTML.
-    O método `gerar_id` gera um ID único utilizando um hash MD5 do timestamp atual.
-    Os métodos `criar_arquivo`, `ler_arquivo`, `atualizar_arquivo` e `deletar_arquivo` fornecem
-    funcionalidades para criar, ler, atualizar e deletar arquivos simulados, respectivamente.
-    Os métodos `criar_pasta`, `listar_arquivos_pasta`, `adicionar_arquivo_pasta` e `remover_arquivo_pasta`
-    fornecem funcionalidades para criar, listar, adicionar e remover arquivos de pastas simuladas.
-    Os métodos `criar_tag_html`, `ler_tag_html`, `atualizar_tag_html` e `deletar_tag_html` fornecem
-    funcionalidades para criar, ler, atualizar e deletar tags HTML no conteúdo HTML simulado.
+    A classe `Geradores` fornece métodos utilitários para a criação e manipulação
+    de arquivos simulados e conteúdo HTML em memória. Ela facilita a criação de
+    tags HTML com atributos específicos e a manipulação de arquivos simulados.
     """
+
     def __init__(self):
         """
-        Inicializa a classe Geradores com armazenamento simulado para arquivos,
-        pastas e HTML.
+        Inicializa a classe Geradores com armazenamento em memória para arquivos,
+        pastas e conteúdo HTML.
         """
-        self.arquivos_simulados = {}  # Simulação de arquivo em memória
-        self.pastas_simuladas = {}  # Simulação de pastas em memória
-        self.html_teste = """
-            <html>
-                <body>
-                    <DT><H3 ADD_DATE="1686621554" LAST_MODIFIED="1721823235">Estudos</H3>
-                <DL><p>
-                <DT><A HREF="https://dev.to/leandronsp/pt-br-fundamentos-do-git-um-guia-completo-2djh" ADD_DATE="1686055702">[pt-BR] Fundamentos do Git</A>
-                    <DT><H3 ADD_DATE="1618539876" LAST_MODIFIED="1686055731">Python</H3>
-                <DL><p>
-                <DT><A HREF="https://martinfowler.com/articles/practical-test-pyramid.html" ADD_DATE="1691737793">A Pirâmide do Teste Prático</A>
-                </body>
-            </html>"""  # Simulação de HTML em memória
+        self.arquivos_simulados = {}  # Dicionário para armazenar arquivos simulados
+        self.pastas_simuladas = {}  # Dicionário para armazenar pastas simuladas
+        self.html_base = """<html><body></body></html>"""  # HTML base simulado
 
     def gerar_id(self) -> str:
         """
-        Gera um ID único utilizando o hash MD5 baseado no timestamp atual.
-        
+        Gera um ID único utilizando um hash MD5 baseado no timestamp atual.
+
         :return: Um ID único gerado em formato hexadecimal.
         """
         return hashlib.md5(str(time.time()).encode()).hexdigest()
 
-    def criar_arquivo(self, nome: str, conteudo: str) -> str:
+    def criar_elemento(
+        self,
+        tipo: str,
+        nome: str,
+        conteudo: Optional[str] = None,
+        atributos: Optional[dict] = None,
+    ) -> str:
         """
-        Cria um arquivo simulado com o conteúdo fornecido e retorna um ID único
-        para o arquivo.
+        Cria um novo elemento (arquivo, pasta ou tag HTML) dependendo do tipo especificado.
 
-        :param nome: Nome do arquivo.
-        :param conteudo: Conteúdo que será escrito no arquivo.
-        :return: ID único gerado para o arquivo.
+        :param tipo: Tipo de elemento a ser criado, pode ser 'html', 'arquivo' ou 'pasta'.
+        :param nome: Nome do elemento (nome do arquivo ou nome da tag HTML).
+        :param conteudo: Conteúdo a ser inserido no elemento (opcional).
+        :param atributos: Atributos a serem adicionados à tag HTML (somente para tipo 'html').
+        :return: ID único do elemento ou HTML atualizado.
         """
-        arquivo_id = hashlib.md5(nome.encode()).hexdigest()
-        self.arquivos_simulados[arquivo_id] = conteudo
-        return arquivo_id
+        if tipo == "html":
+            return self.criar_tag_html(nome, conteudo, atributos)
+        if tipo == "arquivo":
+            return self.criar_arquivo(nome, conteudo)
+        if tipo == "pasta":
+            return self.criar_pasta(nome)
+        raise ValueError(f"Tipo '{tipo}' não suportado.")
 
-    def ler_arquivo(self, arquivo_id: str) -> Optional[str]:
+    def criar_tag_html(
+        self, tag: str, conteudo: str, atributos: Optional[dict] = None
+    ) -> str:
         """
-        Lê o conteúdo de um arquivo simulado usando seu ID.
-
-        :param arquivo_id: ID único do arquivo a ser lido.
-        :return: Conteúdo do arquivo ou None se o arquivo não existir.
-        """
-        return self.arquivos_simulados.get(arquivo_id)
-
-    def atualizar_arquivo(self, arquivo_id: str, novo_conteudo: str) -> bool:
-        """
-        Atualiza o conteúdo de um arquivo simulado existente.
-
-        :param arquivo_id: ID único do arquivo a ser atualizado.
-        :param novo_conteudo: Novo conteúdo a ser escrito no arquivo.
-        :return: True se o arquivo foi atualizado, False se o arquivo não foi encontrado.
-        """
-        if arquivo_id in self.arquivos_simulados:
-            self.arquivos_simulados[arquivo_id] = novo_conteudo
-            return True
-        return False
-
-    def deletar_arquivo(self, arquivo_id: str) -> bool:
-        """
-        Deleta um arquivo simulado.
-
-        :param arquivo_id: ID único do arquivo a ser deletado.
-        :return: True se o arquivo foi deletado, False se o arquivo não foi encontrado.
-        """
-        if arquivo_id in self.arquivos_simulados:
-            del self.arquivos_simulados[arquivo_id]
-            return True
-        return False
-
-    def criar_pasta(self, nome: str) -> str:
-        """
-        Cria uma pasta simulada.
-
-        :param nome: Nome da pasta a ser criada.
-        :return: ID único gerado para a pasta.
-        """
-        pasta_id = hashlib.md5(nome.encode()).hexdigest()
-        self.pastas_simuladas[pasta_id] = []
-        return pasta_id
-
-    def listar_arquivos_pasta(self, pasta_id: str) -> Optional[list]:
-        """
-        Lista os arquivos presentes em uma pasta simulada.
-
-        :param pasta_id: ID único da pasta a ser consultada.
-        :return: Lista de IDs de arquivos na pasta ou None se a pasta não existir.
-        """
-        return self.pastas_simuladas.get(pasta_id)
-
-    def adicionar_arquivo_pasta(self, pasta_id: str, arquivo_id: str) -> bool:
-        """
-        Adiciona um arquivo simulado a uma pasta simulada.
-
-        :param pasta_id: ID único da pasta.
-        :param arquivo_id: ID único do arquivo a ser adicionado.
-        :return: True se o arquivo foi adicionado à pasta, False se a pasta não existir.
-        """
-        if pasta_id in self.pastas_simuladas:
-            self.pastas_simuladas[pasta_id].append(arquivo_id)
-            return True
-        return False
-
-    def remover_arquivo_pasta(self, pasta_id: str, arquivo_id: str) -> bool:
-        """
-        Remove um arquivo simulado de uma pasta simulada.
-
-        :param pasta_id: ID único da pasta.
-        :param arquivo_id: ID único do arquivo a ser removido.
-        :return: True se o arquivo foi removido da pasta, False se a pasta ou o arquivo não existirem.
-        """
-        if pasta_id in self.pastas_simuladas and arquivo_id in self.pastas_simuladas[pasta_id]:
-            self.pastas_simuladas[pasta_id].remove(arquivo_id)
-            return True
-        return False
-
-    def criar_tag_html(self, tag: str, conteudo: str, atributos: Optional[dict] = None) -> str:
-        """
-        Cria uma nova tag HTML com o conteúdo e atributos fornecidos e a adiciona ao HTML simulado.
+        Cria uma nova tag HTML com o conteúdo e atributos fornecidos.
 
         :param tag: Tipo da tag HTML a ser criada (ex: 'a', 'div', 'h1').
         :param conteudo: Conteúdo a ser inserido dentro da tag HTML.
         :param atributos: Atributos opcionais a serem adicionados à tag HTML.
         :return: O HTML atualizado com a nova tag.
         """
-        soup = BeautifulSoup(self.html_teste, "html.parser")
+        soup = BeautifulSoup(self.html_base, "html.parser")
         nova_tag = soup.new_tag(tag, **(atributos or {}))
         nova_tag.string = conteudo
         soup.body.append(nova_tag)
         return str(soup)
 
-    def ler_tag_html(self, tag: str) -> Optional[str]:
+    def criar_arquivo(self, nome_arquivo: str, conteudo: str) -> str:
         """
-        Lê o conteúdo de uma tag HTML específica no HTML simulado.
+        Cria um arquivo simulado com o conteúdo fornecido e retorna um ID único
+        para o arquivo.
 
-        :param tag: Tipo da tag HTML a ser lida (ex: 'a', 'h1').
-        :return: Conteúdo da tag HTML ou None se a tag não for encontrada.
+        :param nome_arquivo: Nome do arquivo a ser criado.
+        :param conteudo: Conteúdo que será escrito no arquivo.
+        :return: ID único gerado para o arquivo.
         """
-        soup = BeautifulSoup(self.html_teste, "html.parser")
-        tag_encontrada = soup.find(tag)
-        return tag_encontrada.string if tag_encontrada else None
+        arquivo_id = self.gerar_id()
+        self.arquivos_simulados[arquivo_id] = {
+            "nome_arquivo": nome_arquivo,
+            "conteudo": conteudo,
+        }
+        return arquivo_id
 
-    def atualizar_tag_html(self, tag: str, novo_conteudo: str) -> bool:
+    def criar_pasta(self, nome_pasta: str) -> str:
         """
-        Atualiza o conteúdo de uma tag HTML existente no HTML simulado.
+        Cria uma pasta simulada.
 
-        :param tag: Tipo da tag HTML a ser atualizada (ex: 'a', 'h1').
-        :param novo_conteudo: Novo conteúdo a ser inserido na tag HTML.
-        :return: True se a tag foi atualizada, False se a tag não foi encontrada.
+        :param nome_pasta: Nome da pasta a ser criada.
+        :return: ID único gerado para a pasta.
         """
-        soup = BeautifulSoup(self.html_teste, "html.parser")
-        tag_encontrada = soup.find(tag)
-        if tag_encontrada:
-            tag_encontrada.string = novo_conteudo
-            return True
-        return False
+        pasta_id = self.gerar_id()
+        self.pastas_simuladas[pasta_id] = {"nome_pasta": nome_pasta, "arquivos": []}
+        return pasta_id
 
-    def deletar_tag_html(self, tag: str) -> bool:
+    def criar_arquivo_html(self, dados: List[Dict[str, Optional[str]]]) -> str:
         """
-        Deleta uma tag HTML específica do HTML simulado.
+        Cria um arquivo HTML estruturado com base nos dados fornecidos.
+        Cada entrada no 'dados' deve ser um dicionário com as chaves correspondentes
+        aos atributos da tag HTML e seus respectivos valores.
 
-        :param tag: Tipo da tag HTML a ser deletada (ex: 'a', 'h1').
-        :return: True se a tag foi deletada, False se a tag não foi encontrada.
+        Exemplo de dados:
+        [
+            {"tag": "h3", "conteudo": "Estudos",
+            "atributos": {"ADD_DATE": "1686621554", "LAST_MODIFIED": "1721823235"}},
+            {"tag": "a", "conteudo": "[pt-BR] Fundamentos do Git",
+            "atributos": {"HREF": "https://dev.to/leandronsp/pt-br-fundamentos-do-git-um-guia-completo-2djh",
+            "ADD_DATE": "1686055702"}}
+        ]
+
+        :param dados: Lista de dicionários contendo as tags, conteúdo e atributos.
+        :return: O HTML completo gerado.
         """
-        soup = BeautifulSoup(self.html_teste, "html.parser")
-        tag_encontrada = soup.find(tag)
-        if tag_encontrada:
-            tag_encontrada.decompose()
-            return True
-        return False
+        soup = BeautifulSoup("<html><body></body></html>", "html.parser")
+
+        for item in dados:
+            tag = item.get("tag")
+            conteudo = item.get("conteudo")
+            atributos = item.get("atributos", {})
+            nova_tag = soup.new_tag(tag, **atributos)
+            nova_tag.string = conteudo
+            soup.body.append(nova_tag)
+
+        return str(soup)
+
+
+### Exemplo de Uso:
+
+if __name__ == "__main__":
+    # Inicializando a classe Geradores
+    gerador = Geradores()
+
+    # Criar e manipular arquivos simulados
+    print("### Criando Arquivos e Pastas ###")
+
+    # Criar arquivo
+    ID_ARQUIVO = gerador.criar_arquivo("arquivo1.txt", "Conteúdo do arquivo 1")
+    print(f"Arquivo criado com ID: {ID_ARQUIVO}")
+
+    # Criar pasta
+    ID_PASTA = gerador.criar_pasta("pasta1")
+    print(f"Pasta criada com ID: {ID_PASTA}")
+
+    print("\n### Criando Tags HTML ###")
+
+    # Criar uma tag HTML simples
+    HTML_ATUALIZADO = gerador.criar_tag_html(
+        "p", "Este é um parágrafo.", {"class": "paragrafo"}
+    )
+    print(f"HTML Atualizado com tag 'p': {HTML_ATUALIZADO}")
+
+    print("\n### Criando Arquivo HTML com múltiplas tags ###")
+
+    # Criando tags HTML com atributos separados
+    dados_html = [
+        {
+            "tag": "h3",
+            "conteudo": "Estudos",
+            "atributos": {"ADD_DATE": "1686621554", "LAST_MODIFIED": "1721823235"},
+        },
+        {
+            "tag": "a",
+            "conteudo": "[pt-BR] Fundamentos do Git",
+            "atributos": {
+                "HREF": "https://dev.to/leandronsp/pt-br-fundamentos-do-git-um-guia-completo-2djh",
+                "ADD_DATE": "1686055702",
+            },
+        },
+        {
+            "tag": "h3",
+            "conteudo": "Python",
+            "atributos": {"ADD_DATE": "1618539876", "LAST_MODIFIED": "1686055731"},
+        },
+        {
+            "tag": "a",
+            "conteudo": "A Pirâmide do Teste Prático",
+            "atributos": {
+                "HREF": "https://martinfowler.com/articles/practical-test-pyramid.html",
+                "ADD_DATE": "1691737793",
+            },
+        },
+    ]
+
+    # Criar o arquivo HTML com múltiplas tags
+    HTML_GERADO = gerador.criar_arquivo_html(dados_html)
+    print(f"HTML Completo Gerado:\n{HTML_GERADO}")
