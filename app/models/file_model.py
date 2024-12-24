@@ -1,5 +1,5 @@
-# # app/models/file_model.py
-# # pylint: disable=C, R0902
+# app/models/file_model.py
+# pylint: disable=C, R0902
 
 import os
 import sys
@@ -7,7 +7,7 @@ from pathlib import Path
 import platform
 from typing import Optional, Dict
 
-# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas
+# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas  # pylint: disable=C0413
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 from app.models.bookmark_model import ObjetoTag

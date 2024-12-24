@@ -16,9 +16,17 @@ Principais funcionalidades testadas:
 Framework utilizado: pytest.
 """
 
+import os
+import sys
 import tempfile
 from pathlib import Path
 import pytest
+
+
+# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas  # pylint: disable=C0413
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+
+
 from app.utils.conversores import ConversoresUtils
 
 # Dados de exemplo para uso nos testes

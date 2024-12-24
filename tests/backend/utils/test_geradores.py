@@ -41,7 +41,15 @@ Exemplo de execução dos testes:
 
 """
 
+import os
+import sys
 import pytest
+
+
+# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas  # pylint: disable=C0413
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+
+
 from app.utils.geradores import Geradores
 
 # Teste de geração de ID único
