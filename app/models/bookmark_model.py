@@ -72,8 +72,8 @@ class ObjetoTag:
         Returns:
             str: JSON com as informações das tags processadas.
         """
-        tags = self._extrair_tags()
-        resultado = {
+        tags: ResultSet[Tag] = self._extrair_tags()
+        resultado: Dict[str, Dict[str, str]] = {
             f"tag_{i + 1}": self._processar_tag(tag) for i, tag in enumerate(tags)
         }
         return json.dumps(resultado, indent=4, ensure_ascii=False)
