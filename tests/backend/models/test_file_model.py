@@ -22,9 +22,9 @@ def test_get_parent_directory():
     Testa a obtenção do diretório pai de um arquivo, garantindo que
     o método retorne corretamente o diretório pai do arquivo.
     """
-    file = ObjetoArquivo("/home/usuario/Downloads/Chrome/favoritos_23_12_2024.html")
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html")
     parent_dir = file.obter_diretorio_pai()
-    assert parent_dir == Path("/home/usuario/Downloads/Chrome")
+    assert parent_dir == Path("/home/pedro-pm-dias/Downloads/Chrome")
 
 
 def test_file_existence_check():
@@ -32,7 +32,7 @@ def test_file_existence_check():
     Testa a verificação de existência de um arquivo, garantindo que
     o método retorne True quando o arquivo existir.
     """
-    file = ObjetoArquivo("/home/usuario/Downloads/Chrome/favoritos_23_12_2024.html")
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html")
     assert file.verificar_existencia_arquivo() is True
 
 
@@ -50,7 +50,7 @@ def test_create_file_with_content():
     Testa a criação de um arquivo com conteúdo, verificando se o
     conteúdo pode ser lido corretamente após a criação.
     """
-    file = ObjetoArquivo("/home/usuario/Downloads/Chrome/arquivo_teste.txt")
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo_teste.txt")
     assert file.criar_novo_arquivo("Conteúdo de teste") is True
     assert file.ler_arquivo() == "Conteúdo de teste"
 
@@ -81,19 +81,19 @@ def test_create_file_with_content():
 #     assert bookmark.file == file
 
 
-# def test_add_multiple_bookmarks():
-#     """
-#     Testa a adição de múltiplos bookmarks a um arquivo, garantindo que
-#     os bookmarks sejam adicionados corretamente à lista de bookmarks.
-#     """
-#     file = ObjetoArquivo("Exemplo de Pasta")
-#     bookmark1 = ObjetoTag("Título 1", "http://exemplo1.com")
-#     bookmark2 = ObjetoTag("Título 2", "http://exemplo2.com")
-#     file.add_bookmark(bookmark1)
-#     file.add_bookmark(bookmark2)
-#     assert len(file.bookmarks) == 2
-#     assert bookmark1 in file.bookmarks
-#     assert bookmark2 in file.bookmarks
+def test_add_multiple_bookmarks():
+    """
+    Testa a adição de múltiplos bookmarks a um arquivo, garantindo que
+    os bookmarks sejam adicionados corretamente à lista de bookmarks.
+    """
+    file = ObjetoArquivo("Exemplo de Pasta")
+    bookmark1 = ObjetoTag("Título 1", "http://exemplo1.com")
+    bookmark2 = ObjetoTag("Título 2", "http://exemplo2.com")
+    file.add_bookmark(bookmark1)
+    file.add_bookmark(bookmark2)
+    assert len(file.bookmarks) == 2
+    assert bookmark1 in file.bookmarks
+    assert bookmark2 in file.bookmarks
 
 # def test_file_with_folder():
 #     """
@@ -104,35 +104,35 @@ def test_create_file_with_content():
 #     assert file.folder == "Caminho/para/Pasta"
 
 
-# def test_create_file():
-#     """
-#     Testa a criação de um arquivo dentro de uma pasta, verificando se
-#     o arquivo foi corretamente associado à pasta.
-#     """
-#     folder = Folder(name="pasta_exemplo")
-#     file = ObjetoArquivo(caminho="arquivo_exemplo")
-#     folder.add_file(file)
-#     assert file.name == "arquivo_exemplo"
-#     assert file.folder == folder
-#     assert file in folder.files
+def test_create_file():
+    """
+    Testa a criação de um arquivo dentro de uma pasta, verificando se
+    o arquivo foi corretamente associado à pasta.
+    """
+    folder = Folder(name="pasta_exemplo")
+    file = ObjetoArquivo(caminho="arquivo_exemplo")
+    folder.add_file(file)
+    assert file.name == "arquivo_exemplo"
+    assert file.folder == folder
+    assert file in folder.files
 
 
-# def test_file_absolute_path():
-#     """
-#     Testa o método de verificação de caminho absoluto de um arquivo,
-#     garantindo que o método identifique corretamente os caminhos absolutos.
-#     """
-#     file = ObjetoArquivo("/home/usuario/Downloads/Chrome/favoritos_23_12_2024.html")
-#     assert file._eh_caminho_absoluto() is True
+def test_file_absolute_path():
+    """
+    Testa o método de verificação de caminho absoluto de um arquivo,
+    garantindo que o método identifique corretamente os caminhos absolutos.
+    """
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html")
+    assert file._eh_caminho_absoluto() is True
 
 
-# def test_file_not_found():
-#     """
-#     Testa a verificação de um arquivo inexistente, garantindo que
-#     o método retorne um dicionário vazio quando o arquivo não for encontrado.
-#     """
-#     file = ObjetoArquivo("/caminho/invalido/para/arquivo.txt")
-#     assert file.obter_informacoes_arquivo() == {}
+def test_file_not_found():
+    """
+    Testa a verificação de um arquivo inexistente, garantindo que
+    o método retorne um dicionário vazio quando o arquivo não for encontrado.
+    """
+    file = ObjetoArquivo("/caminho/invalido/para/arquivo.txt")
+    assert file.obter_informacoes_arquivo() == {}
 
 
 # def test_file_size_conversion():
@@ -140,7 +140,7 @@ def test_create_file_with_content():
 #     Testa a conversão de tamanho de arquivo, garantindo que o método
 #     de obtenção de tamanho funcione corretamente.
 #     """
-#     file = ObjetoArquivo("/home/usuario/Downloads/Chrome/favoritos_23_12_2024.html")
+#     file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html")
 #     size = file._obter_tamanho_arquivo()
 #     assert size is not None
 
@@ -150,7 +150,7 @@ def test_create_file_with_content():
 #     Testa a funcionalidade de renomear um arquivo, verificando se o
 #     nome do arquivo é alterado corretamente após a operação de renomeação.
 #     """
-#     file = ObjetoArquivo("/home/usuario/Downloads/Chrome/arquivo_teste.txt")
+#     file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo_teste.txt")
 #     file.criar_novo_arquivo("Conteúdo de teste")
 #     new_path = file._ObjetoArquivo__renomear_arquivo("_renomeado", ".txt")
 #     assert new_path.name == "arquivo_teste_renomeado.txt"
@@ -161,7 +161,62 @@ def test_create_file_with_content():
 #     Testa a funcionalidade de mover um arquivo para uma nova pasta,
 #     garantindo que o arquivo seja movido corretamente para o novo local.
 #     """
-#     file = ObjetoArquivo("/home/usuario/Downloads/Chrome/arquivo_teste.txt")
+#     file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo_teste.txt")
 #     file.criar_novo_arquivo("Conteúdo de teste")
-#     new_path = file._ObjetoArquivo__mover_arquivo("/home/usuario/Downloads/Chrome/NovaPasta")
+#     new_path = file._ObjetoArquivo__mover_arquivo("/home/pedro-pm-dias/Downloads/Chrome/NovaPasta")
 #     assert new_path.name == "arquivo_teste.txt"
+
+
+def test_file_not_found_error_handling():
+    """
+    Testa a manipulação de erro ao tentar obter informações de um arquivo inexistente.
+    """
+    file = ObjetoArquivo("/caminho/invalido/para/arquivo.txt")
+    assert file.obter_informacoes_arquivo() == {"erro": "Arquivo ou diretório não encontrado."}
+
+def test_read_file_with_special_characters():
+    """
+    Testa a leitura de um arquivo que contém caracteres especiais.
+    """
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo_com_caracteres_especiais.txt")
+    file.criar_novo_arquivo("Conteúdo com caracteres especiais: ñ, é, ü.")
+    assert file._ler_arquivo() == "Conteúdo com caracteres especiais: ñ, é, ü."
+
+def test_create_file_without_permission():
+    """
+    Testa a criação de um arquivo em um diretório sem permissão, garantindo que a operação falhe.
+    """
+    file = ObjetoArquivo("/root/arquivo_teste.txt")
+    assert file.criar_novo_arquivo("Conteúdo de teste") is False
+
+def test_process_tags_empty_file():
+    """
+    Testa o processamento de tags em um arquivo vazio, garantindo que retorne None.
+    """
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo_vazio.txt")
+    file.criar_novo_arquivo("")
+    assert file.processar_tags_arquivo() is None
+
+def test_file_creation_with_long_content():
+    """
+    Testa a criação de um arquivo com conteúdo longo, verificando se o conteúdo é gravado corretamente.
+    """
+    long_content = "A" * 10000  # 10,000 characters
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo_longo.txt")
+    assert file.criar_novo_arquivo(long_content) is True
+    assert file._ler_arquivo() == long_content
+
+def test_file_size_property():
+    """
+    Testa a propriedade de tamanho do arquivo, garantindo que retorne o tamanho correto.
+    """
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo_teste_tamanho.txt")
+    file.criar_novo_arquivo("Conteúdo de teste")
+    assert file.tamanho_arquivo is not None
+
+def test_file_creation_with_invalid_path():
+    """
+    Testa a criação de um arquivo em um caminho inválido, garantindo que a operação falhe.
+    """
+    file = ObjetoArquivo("/caminho/invalido/para/arquivo_teste.txt")
+    assert file.criar_novo_arquivo("Conteúdo de teste") is False

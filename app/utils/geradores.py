@@ -1,7 +1,7 @@
 # app/utils/geradores.py
 
 """
-Módulo com a classe `Geradores` que oferece métodos para criar e
+Módulo com a classe `GeradoresUtils` que oferece métodos para criar e
 manipular arquivos simulados e conteúdo HTML em memória.
 A classe permite gerar IDs únicos, criar e manipular arquivos e
 pastas simuladas, e gerar tags HTML com atributos personalizados.
@@ -12,7 +12,7 @@ Métodos principais:
 - Criar e manipular tags HTML com atributos personalizados.
 
 Exemplo de uso:
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     id_arquivo = gerador.criar_arquivo('teste.txt', 'Conteúdo do arquivo')
     html_atualizado = gerador.criar_tag_html('p', 'Texto de parágrafo', {'class': 'paragrafo'})
 """
@@ -23,16 +23,16 @@ from typing import Optional, List, Dict
 from bs4 import BeautifulSoup
 
 
-class Geradores:
+class GeradoresUtils:
     """
-    A classe `Geradores` fornece métodos utilitários para a criação e manipulação
+    A classe `GeradoresUtils` fornece métodos utilitários para a criação e manipulação
     de arquivos simulados e conteúdo HTML em memória. Ela facilita a criação de
     tags HTML com atributos específicos e a manipulação de arquivos simulados.
     """
 
     def __init__(self):
         """
-        Inicializa a classe Geradores com armazenamento em memória para arquivos,
+        Inicializa a classe GeradoresUtils com armazenamento em memória para arquivos,
         pastas e conteúdo HTML.
         """
         self.arquivos_simulados = {}  # Dicionário para armazenar arquivos simulados
@@ -149,8 +149,8 @@ class Geradores:
 ### Exemplo de Uso:
 
 if __name__ == "__main__":
-    # Inicializando a classe Geradores
-    gerador = Geradores()
+    # Inicializando a classe GeradoresUtils
+    gerador = GeradoresUtils()
 
     # Criar e manipular arquivos simulados
     print("### Criando Arquivos e Pastas ###")

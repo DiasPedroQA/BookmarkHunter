@@ -12,9 +12,9 @@ Todos os modelos são importados neste módulo para facilitar o acesso.
 """
 
 from .conversores import ConversoresUtils
-from .geradores import Geradores
+from .geradores import GeradoresUtils
 
 __all__ = [
     "ConversoresUtils",
-    "Geradores",
+    "GeradoresUtils",
 ]

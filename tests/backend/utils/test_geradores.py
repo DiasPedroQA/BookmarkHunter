@@ -1,8 +1,8 @@
 # tests/backend/utils/geradores.py
 
 """
-Este módulo contém um conjunto de testes para a classe `Geradores`, localizada no
-módulo `app.utils.geradores`. A classe `Geradores` fornece métodos utilitários para a
+Este módulo contém um conjunto de testes para a classe `GeradoresUtils`, localizada no
+módulo `app.utils.geradores`. A classe `GeradoresUtils` fornece métodos utilitários para a
 criação e manipulação de arquivos simulados e conteúdo HTML em memória, como a criação
 de arquivos, pastas e tags HTML personalizadas.
 
@@ -29,12 +29,12 @@ Os testes são implementados utilizando o framework `pytest` e cobrem os seguint
    - Testa a criação de tags HTML sem atributos e com conteúdo vazio.
    - Testa a criação de arquivos e pastas com conteúdo ou nome vazio.
 
-Esses testes garantem que os métodos da classe `Geradores` funcionem corretamente,
+Esses testes garantem que os métodos da classe `GeradoresUtils` funcionem corretamente,
 lidando com diferentes entradas e cenários de uso, incluindo casos de erro esperados.
 
 Requisitos:
     - O framework `pytest` deve estar instalado.
-    - O módulo `app.utils.geradores` deve estar disponível e a classe `Geradores` corretamente implementada.
+    - O módulo `app.utils.geradores` deve estar disponível e a classe `GeradoresUtils` corretamente implementada.
 
 Exemplo de execução dos testes:
     Para rodar todos os testes, basta executar o comando `pytest` no diretório raiz do projeto.
@@ -44,7 +44,7 @@ Exemplo de execução dos testes:
 import os
 import sys
 import pytest
-from app.utils.geradores import Geradores
+from app.utils.geradores import GeradoresUtils
 
 
 # Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas  # pylint: disable=C0413
@@ -57,7 +57,7 @@ def test_gerar_id_unico():
     Testa a geração de IDs únicos. O objetivo é garantir que a função `gerar_id`
     retorne IDs diferentes a cada chamada.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     id1 = gerador.gerar_id()
     id2 = gerador.gerar_id()
     assert id1 != id2  # Verifica se os IDs gerados são diferentes
@@ -68,7 +68,7 @@ def test_criar_arquivo():
     Testa a função `criar_arquivo`, verificando se o arquivo é armazenado corretamente
     no dicionário `arquivos_simulados` com o nome e conteúdo corretos.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     arquivo_id = gerador.criar_arquivo("arquivo_teste.txt", "Conteúdo do arquivo")
     assert arquivo_id in gerador.arquivos_simulados  # Verifica se o ID do arquivo foi adicionado
     assert gerador.arquivos_simulados[arquivo_id]["nome_arquivo"] == "arquivo_teste.txt"  # Verifica o nome do arquivo
@@ -80,7 +80,7 @@ def test_criar_pasta():
     Testa a função `criar_pasta`, garantindo que a pasta seja corretamente armazenada
     no dicionário `pastas_simuladas` com o nome correto.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     pasta_id = gerador.criar_pasta("pasta_teste")
     assert pasta_id in gerador.pastas_simuladas  # Verifica se a pasta foi criada e armazenada
     assert gerador.pastas_simuladas[pasta_id]["nome_pasta"] == "pasta_teste"  # Verifica o nome da pasta
@@ -91,7 +91,7 @@ def test_criar_tag_html():
     Testa a criação de uma tag HTML utilizando a função `criar_tag_html`.
     A função deve adicionar corretamente a tag à estrutura HTML com os atributos fornecidos.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     html_resultado = gerador.criar_tag_html("div", "Conteúdo da div", {"class": "classe-teste"})
     # Verifica se a tag HTML gerada contém o conteúdo e os atributos corretos
     assert '<div class="classe-teste">Conteúdo da div</div>' in html_resultado
@@ -103,7 +103,7 @@ def test_criar_arquivo_html():
     deve gerar um HTML válido com base em uma lista de dicionários contendo as tags,
     conteúdo e atributos.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     dados_html = [
         {"tag": "h1", "conteudo": "Título", "atributos": {}},
         {"tag": "p", "conteudo": "Um parágrafo.", "atributos": {}}
@@ -119,7 +119,7 @@ def test_criar_elemento_invalido():
     Testa o comportamento da função `criar_elemento` quando um tipo de elemento inválido
     é passado. A função deve lançar um erro do tipo `ValueError`.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     with pytest.raises(ValueError, match="Tipo 'invalido' não suportado."):
         gerador.criar_elemento("invalido", "nome")  # Tenta criar um elemento com tipo inválido
 
@@ -129,7 +129,7 @@ def test_criar_tag_html_sem_atributos():
     Testa a criação de uma tag HTML sem atributos. A função `criar_tag_html` deve
     gerar uma tag HTML simples com o conteúdo fornecido.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     html_resultado = gerador.criar_tag_html("span", "Texto sem atributos")
     # Verifica se a tag HTML gerada contém o conteúdo correto
     assert '<span>Texto sem atributos</span>' in html_resultado
@@ -140,7 +140,7 @@ def test_criar_arquivo_com_conteudo_vazio():
     Testa a criação de um arquivo com conteúdo vazio. A função `criar_arquivo` deve
     ser capaz de criar arquivos mesmo que o conteúdo esteja vazio.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     arquivo_id = gerador.criar_arquivo("arquivo_vazio.txt", "")
     # Verifica se o arquivo foi criado corretamente com conteúdo vazio
     assert arquivo_id in gerador.arquivos_simulados
@@ -152,7 +152,7 @@ def test_criar_pasta_com_nome_vazio():
     Testa a criação de uma pasta com nome vazio. A função `criar_pasta` deve
     ser capaz de criar uma pasta mesmo com um nome vazio.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     pasta_id = gerador.criar_pasta("")
     # Verifica se a pasta foi criada corretamente com um nome vazio
     assert pasta_id in gerador.pastas_simuladas
@@ -164,7 +164,7 @@ def test_criar_arquivo_html_com_tags_vazias():
     Testa a criação de um arquivo HTML contendo tags vazias. Mesmo que o conteúdo
     das tags esteja vazio, a função `criar_arquivo_html` deve gerar as tags corretamente.
     """
-    gerador = Geradores()
+    gerador = GeradoresUtils()
     dados_html = [
         {"tag": "h2", "conteudo": "", "atributos": {}},
         {"tag": "a", "conteudo": "", "atributos": {"href": "#"}}

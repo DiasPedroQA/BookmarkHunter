@@ -49,7 +49,7 @@ def test_converter_timestamp_tag_valid_string():
     para o formato legível de data e hora (DD/MM/YYYY HH:mm:ss).
     """
     conversores = ConversoresUtils()
-    result = conversores.converter_timestamp_tag("1686621554")
+    result = conversores.converter_timestamp_para_data_br("1686621554")
     assert result == "12/06/2023 22:59:14"
 
 def test_converter_timestamp_tag_large_value():
@@ -58,7 +58,7 @@ def test_converter_timestamp_tag_large_value():
     O objetivo é garantir que o método lida corretamente com valores fora do uso comum.
     """
     conversores = ConversoresUtils()
-    result = conversores.converter_timestamp_tag(9999999999)
+    result = conversores.converter_timestamp_para_data_br(9999999999)
     assert result == "20/11/2286 14:46:39"
 
 def test_converter_tamanho_arquivo_invalid_type():
