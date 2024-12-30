@@ -148,61 +148,61 @@ class GeradoresUtils:
 
 ### Exemplo de Uso:
 
-if __name__ == "__main__":
-    # Inicializando a classe GeradoresUtils
-    gerador = GeradoresUtils()
+# if __name__ == "__main__":
+#     # Inicializando a classe GeradoresUtils
+#     gerador = GeradoresUtils()
 
-    # Criar e manipular arquivos simulados
-    print("### Criando Arquivos e Pastas ###")
+#     # Criar e manipular arquivos simulados
+#     print("### Criando Arquivos e Pastas ###")
 
-    # Criar arquivo
-    ID_ARQUIVO = gerador.criar_arquivo("arquivo1.txt", "Conteúdo do arquivo 1")
-    print(f"Arquivo criado com ID: {ID_ARQUIVO}")
+#     # Criar arquivo
+#     ID_ARQUIVO = gerador.criar_arquivo("arquivo1.txt", "Conteúdo do arquivo 1")
+#     print(f"Arquivo criado com ID: {ID_ARQUIVO}")
 
-    # Criar pasta
-    ID_PASTA = gerador.criar_pasta("pasta1")
-    print(f"Pasta criada com ID: {ID_PASTA}")
+#     # Criar pasta
+#     ID_PASTA = gerador.criar_pasta("pasta1")
+#     print(f"Pasta criada com ID: {ID_PASTA}")
 
-    print("\n### Criando Tags HTML ###")
+#     print("\n### Criando Tags HTML ###")
 
-    # Criar uma tag HTML simples
-    HTML_ATUALIZADO = gerador.criar_tag_html(
-        "p", "Este é um parágrafo.", {"class": "paragrafo"}
-    )
-    print(f"HTML Atualizado com tag 'p': {HTML_ATUALIZADO}")
+#     # Criar uma tag HTML simples
+#     HTML_ATUALIZADO = gerador.criar_tag_html(
+#         "p", "Este é um parágrafo.", {"class": "paragrafo"}
+#     )
+#     print(f"HTML Atualizado com tag 'p': {HTML_ATUALIZADO}")
 
-    print("\n### Criando Arquivo HTML com múltiplas tags ###")
+#     print("\n### Criando Arquivo HTML com múltiplas tags ###")
 
-    # Criando tags HTML com atributos separados
-    dados_html = [
-        {
-            "tag": "h3",
-            "conteudo": "Estudos",
-            "atributos": {"ADD_DATE": "1686621554", "LAST_MODIFIED": "1721823235"},
-        },
-        {
-            "tag": "a",
-            "conteudo": "[pt-BR] Fundamentos do Git",
-            "atributos": {
-                "HREF": "https://dev.to/leandronsp/pt-br-fundamentos-do-git-um-guia-completo-2djh",
-                "ADD_DATE": "1686055702",
-            },
-        },
-        {
-            "tag": "h3",
-            "conteudo": "Python",
-            "atributos": {"ADD_DATE": "1618539876", "LAST_MODIFIED": "1686055731"},
-        },
-        {
-            "tag": "a",
-            "conteudo": "A Pirâmide do Teste Prático",
-            "atributos": {
-                "HREF": "https://martinfowler.com/articles/practical-test-pyramid.html",
-                "ADD_DATE": "1691737793",
-            },
-        },
-    ]
+#     # Criando tags HTML com atributos separados
+#     dados_html = [
+#         {
+#             "tag": "h3",
+#             "conteudo": "Estudos",
+#             "atributos": {"ADD_DATE": "1686621554", "LAST_MODIFIED": "1721823235"},
+#         },
+#         {
+#             "tag": "a",
+#             "conteudo": "[pt-BR] Fundamentos do Git",
+#             "atributos": {
+#                 "HREF": "https://dev.to/leandronsp/pt-br-fundamentos-do-git-um-guia-completo-2djh",
+#                 "ADD_DATE": "1686055702",
+#             },
+#         },
+#         {
+#             "tag": "h3",
+#             "conteudo": "Python",
+#             "atributos": {"ADD_DATE": "1618539876", "LAST_MODIFIED": "1686055731"},
+#         },
+#         {
+#             "tag": "a",
+#             "conteudo": "A Pirâmide do Teste Prático",
+#             "atributos": {
+#                 "HREF": "https://martinfowler.com/articles/practical-test-pyramid.html",
+#                 "ADD_DATE": "1691737793",
+#             },
+#         },
+#     ]
 
-    # Criar o arquivo HTML com múltiplas tags
-    HTML_GERADO = gerador.criar_arquivo_html(dados_html)
-    print(f"HTML Completo Gerado:\n{HTML_GERADO}")
+#     # Criar o arquivo HTML com múltiplas tags
+#     HTML_GERADO = gerador.criar_arquivo_html(dados_html)
+#     print(f"HTML Completo Gerado:\n{HTML_GERADO}")

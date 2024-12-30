@@ -1,4 +1,5 @@
 # app/models/file_model.py
+# pylint: disable=E, C, W
 
 """
 Módulo para processar arquivos e extrair informações relevantes.
@@ -10,214 +11,130 @@ Classes:
 
 import os
 import sys
+import json
+from typing import Dict, Optional, Union
 from pathlib import Path
-import platform
-from typing import Dict, Optional, List
-from bs4 import BeautifulSoup
 
-# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas  # pylint: disable=C, W0212, W0621
+# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
-from app.models.bookmark_model import ObjetoTag, TagConfig
-from app.utils.conversores import ConversoresUtils
-from app.utils.geradores import GeradoresUtils
+from app.models import BasePathModel, ObjetoTag  # Importa a classe base
+from app.utils import ConversoresUtils, GeradoresUtils
 
 
-class FileData(Dict):
+class ObjetoArquivo(BasePathModel):
     """
-    Estrutura para representar dados de arquivos processados.
-    """
-
-    id_arquivo: str
-    sistema_operacional: str
-    caminho_absoluto: str
-    nome_arquivo: str
-    extensao_arquivo: str
-    is_file: bool
-    is_dir: bool
-    tamanho_arquivo: Optional[str]
-    data_criacao: Optional[str]
-    data_modificacao: Optional[str]
-
-
-# Classe para configurar os arquivos
-class FileConfig:
-    """
-    Configurações para o processamento de arquivos.
+    Classe para obter informações detalhadas sobre arquivos.
+    Herda da classe BasePathModel para análise de caminhos e expande com métodos para processar arquivos.
     """
 
-    SUPORTADOS = [".html", ".htm", ".txt"]  # Tipos de arquivos suportados
+    EXTENSOES_SUPORTADOS = [".html", ".htm", ".txt"]  # Tipos de arquivos suportados
 
-    def __str__(self) -> str:
-        return f"FileConfig(SUPORTADOS={self.SUPORTADOS})"
+    def __init__(self, caminho_atual: str):
+        """
+        Inicializa a classe ObjetoArquivo e configura o caminho do arquivo.
+        Chama o construtor da classe base para analisar o caminho.
+        """
+        super().__init__(
+            caminho_atual
+        )  # Chama o construtor da classe base para analisar o caminho
+        self.path_obj = Path(
+            caminho_atual
+        )  # Cria um objeto Path para manipulação adicional
+        self.conversores = ConversoresUtils()
+        self.geradores: GeradoresUtils = GeradoresUtils()
+        self.objeto_tag: Optional[ObjetoTag] = None
 
-
-class ObjetoArquivo(ObjetoTag):
-    """
-    Processa arquivos para extrair informações estruturadas e realizar operações auxiliares.
-    A classe herda de ObjetoTag para reutilizar a lógica de processamento de tags.
-    """
-
-    def __init__(
-        self,
-        caminho: str,
-        conversores=ConversoresUtils(),
-        geradores=GeradoresUtils(),
-        file_config=FileConfig(),
-        tag_config=TagConfig(),
-    ):
-        # Chama o construtor da classe base ObjetoTag
-        super().__init__(html="", conversores=conversores, geradores=geradores)
-
-        self.caminho_atual = Path(caminho)
-        self.conversores = conversores
-        self.geradores = geradores
-        self.config_file = file_config
-        self.config_tag = tag_config
-        self.tags_ignoradas: List[str] = []  # Para armazenar as tags ignoradas
-
-        if self._verificar_existencia:
-            self._stat = self.caminho_atual.stat()
-            self._tamanho_arquivo = self.conversores.converter_tamanho_arquivo(
-                self._stat.st_size
-            )
-            self._datas_arquivo = {
-                "data_criacao": self.conversores.converter_timestamp_para_data_br(
-                    self._stat.st_ctime
-                ),
-                "data_modificacao": self.conversores.converter_timestamp_para_data_br(
-                    self._stat.st_mtime
-                ),
-            }
+    def _ler_caminho_arquivo(self) -> str:
+        """
+        Lê o conteúdo do arquivo, se for um arquivo.
+        """
+        if self.objeto_path["detalhes"]["natureza"] == "Arquivo":
+            with self.path_obj.open("r", encoding="utf-8") as arquivo:
+                return arquivo.read()
         else:
-            self._stat = None
-            self._tamanho_arquivo = None
-            self._datas_arquivo = {}
+            raise ValueError(f"O caminho {self.caminho} não é um arquivo.")
 
-    @property
-    def _verificar_existencia(self) -> bool:
+    def _calcular_estatisticas(self, conteudo: str) -> Dict[str, Dict[str, int]]:
         """
-        Verifica se o arquivo ou diretório existe.
-        """
-        return self.caminho_atual.exists()
+        Calcula estatísticas do conteúdo do arquivo.
 
-    def informacoes_arquivo(self) -> FileData:
+        Args:
+            conteudo (str): Conteúdo do arquivo.
+
+        Returns:
+            dict: Estatísticas como número de linhas, palavras e caracteres.
         """
-        Obtém informações detalhadas sobre o arquivo ou diretório.
-        """
-        if not self._verificar_existencia:
-            return {"erro": "Arquivo ou diretório não encontrado."}
+        linhas: list[str] = conteudo.splitlines()
         return {
-            "id_arquivo": self.geradores.gerar_id(),
-            "sistema_operacional": platform.system(),
-            "caminho_absoluto": str(self.caminho_atual.resolve()),
-            "nome_arquivo": self.caminho_atual.name,
-            "extensao_arquivo": self.caminho_atual.suffix,
-            "is_file": self.caminho_atual.is_file(),
-            "is_dir": self.caminho_atual.is_dir(),
-            "tamanho_arquivo": self._tamanho_arquivo,
-            **self._datas_arquivo,
+            "estatisticas": {
+                "linhas": len(linhas),
+                "palavras": sum(len(linha.split()) for linha in linhas),
+                "caracteres": len(conteudo),
+            }
         }
 
-    def _ler_arquivo(self) -> Optional[str]:
+    def obter_informacoes_path(self) -> Dict[str, Union[bool, str]]:
         """
-        Lê o conteúdo de um arquivo se ele existir.
+        Obtém informações adicionais sobre o caminho usando pathlib.
+
+        Returns:
+            dict: Informações detalhadas sobre o caminho.
         """
-        if not self.caminho_atual.is_file():
-            return None
-        try:
-            with open(self.caminho_atual, "r", encoding="utf-8") as file:
-                return file.read()
-        except (FileNotFoundError, PermissionError, OSError):
-            return None
+        if not self.path_obj.exists():
+            return {"existe": False}
 
-    def _processar_html(self, html_conteudo: str) -> Dict[str, str]:
-        """
-        Processa as tags do conteúdo HTML e retorna as tags válidas e inválidas.
-        """
-        soup = BeautifulSoup(html_conteudo, "html.parser")
-        tags_validas = []
-        tags_invalidas = []
-
-        # Conta as tags válidas
-        for tag in soup.find_all():
-            if tag.name in self.config_tag.TAGS_ALVO:  # Somente tags de interesse
-                if self._validar_tag(tag):  # Verifica se é uma tag válida
-                    tags_validas.append(self._objeto_tag(tag))  # Adiciona tags válidas
-                else:
-                    tags_invalidas.append(tag.name)  # Adiciona tags inválidas
-
-        # Conta as tags e prepara o resumo
-        total_tags_validas = len(tags_validas)
-        total_tags_invalidas = len(tags_invalidas)
-
-        print(f"Tags Válidas: {total_tags_validas}")
-        print(f"Tags Inválidas: {total_tags_invalidas}")
-
+        stats: os.stat_result = self.path_obj.stat()
         return {
-            "tags_validas": tags_validas,
-            "total_tags_validas": total_tags_validas,
-            "tags_invalidas": tags_invalidas,
-            "total_tags_invalidas": total_tags_invalidas,
+            "existe": True,
+            "tamanho": self.conversores.converter_tamanho_arquivo(stats.st_size),
+            "modificado_em": self.conversores.converter_timestamp_para_data_hora_br(stats.st_mtime),
+            "criado_em": self.conversores.converter_timestamp_para_data_hora_br(stats.st_ctime),
+            "acessado_em": self.conversores.converter_timestamp_para_data_hora_br(stats.st_atime),
         }
 
-    def processar_tags_arquivo(self) -> Optional[Dict[str, str]]:
+    def montar_objeto(self) -> dict:
         """
-        Processa o conteúdo do arquivo e extrai informações relevantes como tags.
+        Retorna as propriedades da classe em formato de dicionário,
+        combinando as informações da classe base com os dados adicionais.
+
+        Returns:
+            dict: Dados combinados da classe base e informações adicionais.
         """
-        arquivo_conteudo = self._ler_arquivo()  # Lê o conteúdo do arquivo
-        if (
-            not arquivo_conteudo
-            or self.caminho_atual.suffix.lower() not in self.config_file.SUPORTADOS
-        ):
-            return None
+        base_path_data: Dict = json.loads(
+            super().ler_caminho()
+        )  # Obtém os dados da classe base
 
-        # Agora passamos o conteúdo HTML corretamente para o método _processar_html
-        tags_processadas = self._processar_html(arquivo_conteudo)
+        if self.path_obj.is_file():
+            conteudo: str = self.ler_caminho_arquivo()
+            estatisticas: Dict[str, Dict[str, int]] = self.calcular_estatisticas(conteudo)
+            base_path_data.update(estatisticas)
 
-        # Retorna as tags válidas processadas e o resumo
-        return tags_processadas
-
-    def resumo_processamento(self) -> Dict[str, int]:
-        """Retorna um resumo do processamento com contagem de tags analisadas e ignoradas."""
-        # Extrai tags processadas de uma vez
-        tags_info = self.processar_tags_arquivo()
-        if not tags_info:
-            return {"erro": "Não foi possível processar o arquivo."}
-
-        return {
-            "total_tags_validas": tags_info["quant_tags_validas"],  # Tags válidas
-            "total_tags_ignoradas": tags_info["quant_tags_ignoradas"],  # Tags ignoradas
-        }
+        base_path_data["path_info"] = self.obter_informacoes_path()
+        return base_path_data
 
 
-# Exemplo de uso:
+# Testando a classe ObjetoArquivo
 if __name__ == "__main__":
-    caminho_arquivo = (
+    caminho_teste_arquivo = (
         "/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
     )
-    obj_arquivo = ObjetoArquivo(caminho_arquivo)
+    objeto_arquivo = ObjetoArquivo(caminho_teste_arquivo)
+    print("\nDados de um arquivo existente:")
+    dados_arquivo = objeto_arquivo.to_dict()  # Exibe os dados do arquivo em formato JSON
+    for k, v in dados_arquivo.items():
+        print(f"\n{k}: {v}")
 
-    # Exibir informações do arquivo
-    informacoes: FileData = obj_arquivo.informacoes_arquivo()
-    if isinstance(informacoes, dict) and "erro" not in informacoes:
-        print("Informações do Arquivo:")
-        for chave, valor in informacoes.items():
-            print(f"{chave}: {valor}")
-    else:
-        print(informacoes["erro"])
+    # caminho_teste_arquivo = (
+    #     "/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_25_12_2024.html"
+    # )
+    # objeto_arquivo = ObjetoArquivo(caminho_teste_arquivo)
+    # print("\nDados de um arquivo não existente:")
+    # pprint(objeto_arquivo.to_dict())  # Exibe os dados do arquivo em formato JSON
 
-    # Processar conteúdo do arquivo
-    tags_info: Dict[str, str] | None = obj_arquivo.processar_tags_arquivo()
-    if tags_info:
-        print("\nInformações Processadas:")
-        print(f"Título do Arquivo: {tags_info['titulo_arquivo']}")
-        print(f"Quantidade de tags válidas <a>: {tags_info['quant_tags_validas']}")
-        print(f"Quantidade de tags inválidas: {tags_info['quant_tags_ignoradas']}")
-    else:
-        print("\nNão foi possível processar as tags do arquivo.")
 
-    # Resumo do processamento
-    resumo: Dict[str, int] = obj_arquivo.resumo_processamento()
-    print("\nResumo de Tags Processadas:")
-    print(resumo)
+# class ObjetoArquivo(BasePathModel, ObjetoTag):
+#     """
+#     Classe para obter informações detalhadas sobre arquivos.
+#     """
+

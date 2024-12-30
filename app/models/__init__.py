@@ -13,11 +13,13 @@ Todos os modelos são importados neste módulo para facilitar o acesso.
 """
 
 from .bookmark_model import ObjetoTag
-from .file_model import ObjetoArquivo
+from .path_model import BasePathModel
+# from .file_model import ObjetoArquivo
 # from .folder_model import ObjetoPasta
 
 __all__ = [
     "ObjetoTag",
-    "ObjetoArquivo",
+    "BasePathModel",
+    # "ObjetoArquivo",
     # "ObjetoPasta"
 ]

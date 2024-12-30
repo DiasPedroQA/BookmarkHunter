@@ -1,6 +1,5 @@
 # app/models/bookmark_model.py
 
-
 """
 Módulo para processar tags HTML e extrair informações relevantes.
 
@@ -9,151 +8,189 @@ tags específicas e transformar as informações extraídas em um formato estrut
 como JSON. Ele utiliza utilitários de conversão e geração de identificadores.
 
 Classes:
-    BaseProcessor: Classe base que fornece utilitários de conversão e geração.
+    BaseTagModel: Classe base que fornece utilitários de conversão e geração.
     ObjetoTag: Especializada na extração e processamento de tags <h3> e <a>.
 
 """
 
+# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas  # pylint: disable=C0413
 import os
 import sys
-import json
-from typing import Dict, List, TypedDict, Optional
-from bs4 import BeautifulSoup, Tag, ResultSet
-
-
-# Adiciona o diretório raiz ao PYTHONPATH para permitir importações absolutas  # pylint: disable=C0413
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-from app.utils.conversores import ConversoresUtils
-from app.utils.geradores import GeradoresUtils
+
+from typing import Any, Dict, List
+from bs4 import BeautifulSoup, Tag
+from app.utils import ConversoresUtils, GeradoresUtils
 
 
-class TagData(TypedDict):
-    """Estrutura para representar dados de uma tag HTML."""
-
-    object_tag_id: str
-    object_tag_name: str
-    object_text_content: str
-    object_attributes: Dict[str, Optional[str]]
-
-
-# Classe para configurar as tags
-class TagConfig:
+class BaseTagModel(ConversoresUtils, GeradoresUtils):
     """
-    Configurações para o processamento de tags HTML.
+    Classe para representar uma tag HTML com funcionalidades base.
+    Herdando de BaseProcessor, possibilita o uso de utilitários para processar atributos.
     """
 
-    TAGS_ALVO = ["a", "h3", "title"]  # Exemplo de tags HTML de interesse
-    ATRIBUTOS_PERMITIDOS = {"href", "add_date", "last_modified"}
+    def __init__(self):
+        """
+        Define os atributos da tag e inicializa utilitários de conversão e geração.
+        """
+        super().__init__()
+        self.conversores = ConversoresUtils()
+        self.geradores = GeradoresUtils()
+        self._tag_id: str = ""
+        self._tag_name: str = ""
+        self._tag_text_content: str = ""
+        self._tag_atributos: Dict[str, str] = {}
 
-    def __str__(self) -> str:
-        return f"TagConfig(TAGS_ALVO={self.TAGS_ALVO})"
-
-class ObjetoTag:
-    """Processa tags HTML para extrair informações estruturadas."""
-
-    def __init__(
-        self,
-        html: str,
-        conversores=ConversoresUtils(),
-        geradores=GeradoresUtils(),
-        config=TagConfig(),
-    ):
-        self.html = html
-        self.conversores = conversores
-        self.geradores = geradores
-        self.config = config
-        self.tags_ignoradas: List[str] = (
-            []
-        )  # Lista para armazenar nomes de tags ignoradas
-        self.todas_tags: ResultSet[Tag] = (
-            self._extrair_tags()
-        )  # Armazenar todas as tags uma vez
-
-    def _extrair_tags(self) -> ResultSet[Tag]:
-        """Extrai todas as tags HTML do conteúdo."""
-        soup = BeautifulSoup(self.html, "html.parser")
-        return soup.find_all()  # Retorna todas as tags encontradas no HTML
-
-    def _processar_atributos(self, tag: Tag) -> Dict[str, Optional[str]]:
-        """Processa os atributos permitidos de uma tag HTML."""
-        return {
-            k.lower(): (
-                self.conversores.converter_timestamp_para_data_br(tag_timestamp=v)
-                if k.lower() in {"add_date", "last_modified"}
-                else v
+    @property
+    def tag_id(self) -> str:
+        """
+        Retorna o ID da tag.
+        """
+        if self._tag_name == "" or self._tag_text_content == "":
+            raise ValueError(
+                "Todos os dados da tag precisam ser definidos antes de acessar o ID."
             )
-            for k, v in tag.attrs.items()
-            if k.lower() in self.config.ATRIBUTOS_PERMITIDOS
-        }
+        if not self._tag_id:
+            self._tag_id = self.geradores.gerar_id()
+        return self._tag_id
 
-    def _objeto_tag(self, tag: Tag) -> TagData:
-        """Transforma uma tag HTML em um dicionário estruturado."""
-        return TagData(
-            object_tag_id=self.geradores.gerar_id(),
-            object_tag_name=f"<{tag.name}>",
-            object_text_content=tag.get_text(strip=True) or "",
-            object_attributes=self._processar_atributos(tag),
-        )
+    @property
+    def tag_name(self) -> str:
+        """
+        Retorna o nome da tag.
+        """
+        return self._tag_name
 
-    def _validar_tag(self, tag: Tag) -> bool:
-        """Valida se a tag está na lista de alvos."""
-        return tag.name in self.config.TAGS_ALVO
+    @tag_name.setter
+    def tag_name(self, value: str):
+        """
+        Define o nome da tag.
+        """
+        self._tag_name = value
 
-    def processar_tags(self) -> str:
-        """Processa todas as tags e retorna os dados válidos em formato JSON."""
-        tags_validas = {}
-        for indice_tag, tag in enumerate(self.todas_tags):
-            if self._validar_tag(tag):
-                tags_validas[f"tag_{indice_tag + 1}"] = self._objeto_tag(tag)
-            else:
-                self.tags_ignoradas.append(tag.name)
-                # Apenas armazenar a tag ignorada, sem exibir ainda
-        return json.dumps(tags_validas, indent=4, ensure_ascii=False)
+    @property
+    def tag_text_content(self) -> str:
+        """
+        Retorna o conteúdo de texto da tag.
+        """
+        return self._tag_text_content
 
-    def resumo_processamento(self) -> Dict[str, int]:
-        """Retorna um resumo do processamento com contagem de tags analisadas e ignoradas."""
-        tags_total = len(self.todas_tags)
-        tags_validadas = len(json.loads(self.processar_tags()))
-        tags_ignoradas = tags_total - tags_validadas
+    @tag_text_content.setter
+    def tag_text_content(self, value: str):
+        """
+        Define o conteúdo de texto da tag.
+        """
+        self._tag_text_content = value
 
-        print("\nTags ignoradas:")
-        if self.tags_ignoradas:
-            # Exibe as tags ignoradas e quantas vezes ocorreram
-            for tag_name in set(self.tags_ignoradas):
-                print(
-                    f"- <{tag_name}> ({self.tags_ignoradas.count(tag_name)}) ocorrências"
-                )
-        else:
-            print("Nenhuma tag foi ignorada.")
+    @property
+    def tag_atributos(self) -> Dict[str, str]:
+        """
+        Retorna os atributos da tag.
+        """
+        return self._tag_atributos
 
-        return {
-            "total_tags_analisadas": tags_total,
-            "total_tags_validas": tags_validadas,
-            "total_tags_ignoradas": tags_ignoradas,
-        }
+    @tag_atributos.setter
+    def tag_atributos(self, value: Dict[str, str]):
+        """
+        Define os atributos da tag.
+        """
+        self._tag_atributos = value
+
+    def dados_definidos(self) -> bool:
+        """
+        Verifica se os dados da tag foram definidos.
+        """
+        return bool(self._tag_name and self._tag_text_content and self._tag_atributos)
+
+    def processar_atributos_com_timestamps(self):
+        """
+        Converte atributos que possuem timestamps para o formato de data e hora brasileiro.
+        """
+        for key, val in self._tag_atributos.items():
+            if val.isdigit():
+                self._tag_atributos[key] = self.converter_timestamp_para_data_hora_br(val)
 
 
-# # Exemplo de uso com HTML de teste  # pylint: disable=C0301
-# if __name__ == "__main__":
-#     HTML_TESTE = """
+class ObjetoTag(BaseTagModel):
+    """
+    Classe para processar e gerenciar tags HTML.
+    """
+
+    tags_validas: set[str] = {"title", "h3", "a"}
+    atributos_validos: set[str] = {"href", "add_date", "last_modified"}
+
+    def __init__(self, html_content: str):
+        """
+        Inicializa o objeto ObjetoTag.
+        """
+        super().__init__()
+        self._tags_brutas = html_content
+        self._tags_processadas: List[BaseTagModel] = []
+
+    def _extrair_tags(self) -> List[Tag]:
+        """
+        Extrai as tags válidas do conteúdo HTML.
+        """
+        sopa = BeautifulSoup(self._tags_brutas, 'html.parser')
+        return sopa.find_all(list(self.tags_validas))
+
+    def _processar_atributos(self, obj_tag: Tag) -> Dict[str, str]:
+        """
+        Processa os atributos das tags, filtrando apenas os válidos.
+        """
+        return {key: obj_tag.attrs.get(key, "") for key in self.atributos_validos}
+
+    def _criar_objeto_tag(self, obj_tag: Tag) -> BaseTagModel:
+        """
+        Cria um objeto BaseTagModel a partir de uma tag HTML extraída.
+        """
+        obj = BaseTagModel()
+        obj.tag_name = obj_tag.name
+        obj.tag_text_content = obj_tag.text.strip()
+        obj.tag_atributos = self._processar_atributos(obj_tag)
+        obj.processar_atributos_com_timestamps()  # Aplica a conversão
+        return obj
+
+    def raspar_e_processar_tags(self) -> List[Dict[str, Any]]:
+        """
+        Raspa as tags válidas e processa seus dados em um formato estruturado.
+        """
+        tags_extraidas = self._extrair_tags()
+        for tag in tags_extraidas:
+            objeto_tag = self._criar_objeto_tag(tag)
+            if objeto_tag.dados_definidos():
+                self._tags_processadas.append(objeto_tag)
+
+        return [
+            {
+                "id": tag.tag_id,
+                "name": tag.tag_name,
+                "content": tag.tag_text_content,
+                "attributes": {k: v for k, v in tag.tag_atributos.items() if v},
+            }
+            for tag in self._tags_processadas
+        ]
+
+
+# # Exemplo de uso
+# string_html: str = """
 #     <html>
+#         <head>
+#             <title ADD_DATE="16948752316">Teste da classe ObjetoTag</title>
+#         </head>
 #         <body>
 #             <DT><H3 ADD_DATE="1686621554" LAST_MODIFIED="1721823235">Estudos</H3>
-#         <DL><p>
-#             <DT><A HREF="https://dev.to/leandronsp/pt-br-fundamentos-do-git-um-guia-completo-2djh" ADD_DATE="1686055702">[pt-BR] Fundamentos do Git</A>
+#             <DL><p>
+#             <DT><A HREF="https://dev.to/leandronsp/" ADD_DATE="1686055702">[pt-BR] Fundamentos do Git</A>
 #             <DT><H3 ADD_DATE="1618539876" LAST_MODIFIED="1686055731">Python</H3>
-#         <DL><p>
-#             <DT><A HREF="https://martinfowler.com/articles/practical-test-pyramid.html" ADD_DATE="1691737793">A Pirâmide do Teste Prático</A>
+#             <DL><p>
+#             <DT><A HREF="https://martinfowler.com/articles" ADD_DATE="1691737793">A Pirâmide do Teste Prático</A>
 #         </body>
 #     </html>
-#     """
+# """
+# objeto = ObjetoTag(string_html)
+# raspagem = objeto.raspar_e_processar_tags()
 
-#     processador: ObjetoTag = ObjetoTag(html=HTML_TESTE)
-#     json_tags: str = processador.processar_tags()
-#     resumo = processador.resumo_processamento()
-
-#     print("Tags Processadas:")
-#     print(f"\n\njson_tags: {json_tags}")
-
-#     print("\nResumo do Processamento:")
-#     print(f"\n\nresumo: {resumo}")
+# # Resultado final
+# for tag_raspada in raspagem:
+#     print(tag_raspada)

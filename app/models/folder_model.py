@@ -15,35 +15,31 @@ Métodos:
     - __repr__: Retorna uma representação em string da Pasta.
 """
 
+from datetime import datetime
+from pathlib import Path
+from typing import List
+import uuid
+from arquivo_model import Arquivo
+
+
 class Pasta:
-    def __init__(self, name, pasta_mae):
-        """
-        Inicializa o objeto Pasta.
+    def __init__(self, caminho: str):
+        self.pasta_id: str = str(uuid.uuid4())
+        self.caminho: Path = Path(caminho).resolve()
+        self.nome: str = self.caminho.name
+        self.data_criacao: datetime = datetime.fromtimestamp(self.caminho.stat().st_ctime)
+        self.data_modificacao: datetime = datetime.fromtimestamp(self.caminho.stat().st_mtime)
+        self.arquivos: List['Arquivo'] = []
+        self.pastas: List['Pasta'] = []
 
-        Args:
-            name (str): O nome da pasta.
-            pasta_mae (Pasta): A pasta mãe que contém essa pasta.
-        """
-        self.name = name
-        self.pasta_mae = pasta_mae
-        self.pastas = []  # Lista para armazenar subpastas
-        self.arquivos = []  # Lista para armazenar os arquivos associados
+    def _calcular_tamanho_total(self) -> int:
+        return sum(f.stat().st_size for f in self.caminho.rglob('*') if f.is_file())
 
-    def add_arquivo(self, arquivo):
-        """
-        Associa um arquivo à pasta.
+    def atualizar_conteudo(self):
+        self.arquivos = [Arquivo(str(f)) for f in self.caminho.iterdir() if f.is_file()]
+        self.pastas = [Pasta(str(p)) for p in self.caminho.iterdir() if p.is_dir()]
+    def quantidade_arquivos(self) -> int:
+        return len(self.arquivos)
 
-        Args:
-            arquivo (Arquivo): O arquivo a ser associado à pasta.
-        """
-        self.arquivos.append(arquivo)
-        arquivo.pasta = self
-
-    def __repr__(self):
-        """
-        Retorna uma representação em string da pasta.
-
-        Returns:
-            str: Representação da pasta.
-        """
-        return f"<Pasta(name={self.name})>"
+    def quantidade_subpastas(self) -> int:
+        return len(self.pastas)
