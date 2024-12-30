@@ -45,7 +45,7 @@ class ObjetoArquivo(BasePathModel):
         self.geradores: GeradoresUtils = GeradoresUtils()
         self.objeto_tag: Optional[ObjetoTag] = None
 
-    def _ler_caminho_arquivo(self) -> str:
+    def ler_caminho_arquivo(self) -> str:
         """
         Lê o conteúdo do arquivo, se for um arquivo.
         """
@@ -55,7 +55,7 @@ class ObjetoArquivo(BasePathModel):
         else:
             raise ValueError(f"O caminho {self.caminho} não é um arquivo.")
 
-    def _calcular_estatisticas(self, conteudo: str) -> Dict[str, Dict[str, int]]:
+    def calcular_estatisticas(self, conteudo: str) -> Dict[str, Dict[str, int]]:
         """
         Calcula estatísticas do conteúdo do arquivo.
 
