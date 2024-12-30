@@ -60,23 +60,44 @@ def test_file_info_exist():
     assert "acessado_em" in info
 
 
-# def test_mount_object_with_nonexistent_file():
-#     """
-#     Testa o comportamento ao montar um objeto para um arquivo inexistente.
-#     """
-#     file = ObjetoArquivo("/caminho/invalido/para/arquivo.txt")
-#     result = file.montar_objeto()
-#     assert result["path_info"]["existe"] is False
+def test_file_read_nonexistent_file():
+    """
+    Testa o comportamento ao tentar ler um arquivo que não existe.
+    """
+    file = ObjetoArquivo("/caminho/invalido/para/arquivo.txt")
+    with pytest.raises(ValueError, match="O caminho .* não é um arquivo."):
+        file.ler_caminho_arquivo()
 
+def test_file_statistics_non_text_file():
+    """
+    Testa a obtenção de estatísticas de um arquivo que não é um arquivo de texto.
+    """
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/imagem.png")
+    with pytest.raises(ValueError, match="O caminho .* não é um arquivo."):
+        file.ler_caminho_arquivo()
 
-# def test_mount_object_with_empty_file():
-#     """
-#     Testa o comportamento ao montar um objeto para um arquivo vazio.
-#     """
-#     file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo_vazio.txt")
-#     with open(file.caminho, "w", encoding="utf-8") as f:
-#         f.write("")
-#     result = file.montar_objeto()
-#     assert result["estatisticas"]["linhas"] == 0
-#     assert result["estatisticas"]["palavras"] == 0
-#     assert result["estatisticas"]["caracteres"] == 0
+def test_file_info_directory():
+    """
+    Testa a obtenção de informações de um diretório, garantindo que o retorno indique que não é um arquivo.
+    """
+    directory = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/")
+    info = directory.obter_informacoes_path()
+    assert info["existe"] is False
+
+def test_mount_object_with_supported_file_extension():
+    """
+    Testa o comportamento ao montar um objeto para um arquivo com extensão suportada.
+    """
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html")
+    result = file.montar_objeto()
+    assert result["path_info"]["existe"] is True
+    assert "estatisticas" in result
+
+def test_mount_object_with_unsupported_file_extension():
+    """
+    Testa o comportamento ao montar um objeto para um arquivo com extensão não suportada.
+    """
+    file = ObjetoArquivo("/home/pedro-pm-dias/Downloads/Chrome/arquivo.pdf")
+    result = file.montar_objeto()
+    assert result["path_info"]["existe"] is True
+    assert "estatisticas" not in result
