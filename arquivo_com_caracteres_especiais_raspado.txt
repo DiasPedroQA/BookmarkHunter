@@ -1,1 +1,0 @@
-Conteúdo com caracteres especiais: ñ, é, ü.

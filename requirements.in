@@ -1,0 +1,5 @@
+#flask
+flask>=2.0
+
+#requirements.txt
+requests==2.26.0
