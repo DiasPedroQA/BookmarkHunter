@@ -2,19 +2,14 @@
 Arquivo __init__.py do pacote app.
 """
 
-from flask import Flask
-# from .config import Config
-from .routes import main_routes
+# from flask import Flask
+# from flask_cors import CORS
+# from controllers import register_routes
 
 
-def create_app():
-    """
-    Função de fábrica para criar a instância do aplicativo Flask.
-    """
-    app = Flask(__name__)
-    # app.config.from_object(Config)
-
-    # Registrando blueprints
-    app.register_blueprint(main_routes.bp)
-
-    return app
+# def create_app():
+#     """Inicializa a aplicação Flask."""
+#     app = Flask(__name__)
+#     CORS(app)
+#     register_routes(app)
+#     return app
