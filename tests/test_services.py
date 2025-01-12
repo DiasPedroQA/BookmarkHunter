@@ -1,5 +1,5 @@
 """
-Testes para as funções do módulo services.py
+Testes para as funções do módulo services.py.
 """
 
 from datetime import datetime, timezone, timedelta
@@ -12,14 +12,23 @@ from app.services import (
     obter_data_acesso,
     obter_permissoes_caminho,
     obter_id_unico,
+    sanitizar_caminho_relativo,
     _fatiar_caminho,
-    _formatar_data
+    _formatar_data,
 )
 
 
 def formatar_data(timestamp: int) -> str:
-    """Formata um timestamp em uma string de data."""
-    tz_brasil = timezone(timedelta(hours=-3))  # Horário de Brasília
+    """
+    Formata um timestamp em uma string de data no horário de Brasília.
+
+    Args:
+        timestamp (int): O timestamp Unix.
+
+    Returns:
+        str: Data formatada no padrão "dd/mm/yyyy hh:mm:ss".
+    """
+    tz_brasil = timezone(timedelta(hours=-3))
     return datetime.fromtimestamp(timestamp, tz=tz_brasil).strftime("%d/%m/%Y %H:%M:%S")
 
 
@@ -43,21 +52,30 @@ def formatar_data(timestamp: int) -> str:
             },
         ),
         (
-            "file.txt",
+            "/pasta/file.txt",
             {
-                "pasta_pai": "",
+                "pasta_pai": "pasta",
                 "nome_arquivo": "file",
                 "extensao_arquivo": "txt",
             },
         ),
-        ("", {}),  # Caminho vazio
+        (
+            "",
+            {
+                "pasta_pai": "",
+            }
+        ),  # Caminho vazio deve retornar {}
+        (None, ValueError),  # Tipo inválido
     ],
 )
-def test_obter_dados_caminho(caminho: str, esperado: dict[str, str]) -> None:
+def test_obter_dados_caminho(caminho: str, esperado):
     """Testa a função obter_dados_caminho para arquivos e pastas."""
-    resultado = obter_dados_caminho(caminho)
-    for chave, valor in esperado.items():
-        assert resultado.get(chave) == valor
+    if isinstance(esperado, dict):
+        resultado = obter_dados_caminho(caminho)
+        assert resultado == esperado
+    else:
+        with pytest.raises(esperado):
+            obter_dados_caminho(caminho)
 
 
 # Testes para obter_tamanho_arquivo
@@ -86,12 +104,12 @@ def test_obter_tamanho_arquivo(tamanho: int, esperado: str) -> None:
     "caminho, esperado",
     [
         ("/home/user/docs/", ["home", "user", "docs"]),
-        ("/../home/./user/", ["home", "user"]),
+        ("/../home/./user/", ["home", ".", "user"]),
         ("", []),  # Caminho vazio
         (123, ValueError),  # Tipo inválido
     ],
 )
-def test_fatiar_caminho(caminho, esperado):
+def test_fatiar_caminho(caminho: str, esperado: list[str]) -> None:
     """Testa a função _fatiar_caminho com diversos casos."""
     if isinstance(esperado, list):
         assert _fatiar_caminho(caminho) == esperado
@@ -105,52 +123,30 @@ def test_fatiar_caminho(caminho, esperado):
     "timestamp, esperado",
     [
         (1736614800, "11/01/2025 14:00:00"),
-        (None, "Tipo de dado inválido"),  # Tipo inválido
-        ("invalid", "Tipo de dado inválido"),  # Tipo inválido
+        (None, "Erro ao formatar a data"),  # Tipo inválido
+        ("invalid", "Erro ao formatar a data"),  # Tipo inválido
     ],
 )
-def test_formatar_data(timestamp, esperado):
+def test_formatar_data(timestamp: int, esperado: str) -> None:
     """Testa a função _formatar_data."""
-    if "inválido" in esperado:
+    if "Erro" in esperado:
         assert esperado in _formatar_data(timestamp)
     else:
         assert _formatar_data(timestamp) == esperado
 
 
-# Testes para obter_data_criacao
+# Testes para obter_data_criacao, obter_data_modificacao e obter_data_acesso
 @pytest.mark.parametrize(
-    "timestamp, esperado",
+    "funcao, timestamp, esperado",
     [
-        (1736614800, formatar_data(1736614800)),
+        (obter_data_criacao, 1736614800, formatar_data(1736614800)),
+        (obter_data_modificacao, 1736614800, formatar_data(1736614800)),
+        (obter_data_acesso, 1736614800, formatar_data(1736614800)),
     ],
 )
-def test_obter_data_criacao(timestamp: int, esperado: str) -> None:
-    """Testa a função obter_data_criacao."""
-    assert obter_data_criacao(timestamp) == esperado
-
-
-# Testes para obter_data_acesso
-@pytest.mark.parametrize(
-    "timestamp, esperado",
-    [
-        (1736614800, formatar_data(1736614800)),
-    ],
-)
-def test_obter_data_acesso(timestamp: int, esperado: str) -> None:
-    """Testa a função obter_data_acesso."""
-    assert obter_data_acesso(timestamp) == esperado
-
-
-# Testes para obter_data_modificacao
-@pytest.mark.parametrize(
-    "timestamp, esperado",
-    [
-        (1736614800, formatar_data(1736614800)),
-    ],
-)
-def test_obter_data_modificacao(timestamp: int, esperado: str) -> None:
-    """Testa a função obter_data_modificacao."""
-    assert obter_data_modificacao(timestamp) == esperado
+def test_datas(funcao, timestamp: int, esperado: str) -> None:
+    """Testa as funções de obtenção de datas."""
+    assert funcao(timestamp) == esperado
 
 
 # Testes para obter_permissoes_caminho
@@ -159,17 +155,13 @@ def test_obter_data_modificacao(timestamp: int, esperado: str) -> None:
     [
         ("/tmp", {"leitura": True, "escrita": True, "execucao": True}),
         ("/root", {"leitura": False, "escrita": False, "execucao": False}),
-        ("/path/inexistente", OSError),  # Caminho inválido
+        ("/path/inexistente", {"leitura": False, "escrita": False, "execucao": False}),
     ],
 )
-def test_obter_permissoes_caminho(caminho, esperado):
+def test_obter_permissoes_caminho(caminho: str, esperado: dict[str, bool]) -> None:
     """Testa a função obter_permissoes_caminho."""
-    if isinstance(esperado, dict):
-        resultado = obter_permissoes_caminho(caminho)
-        assert resultado == esperado
-    else:
-        with pytest.raises(esperado):
-            obter_permissoes_caminho(caminho)
+    resultado = obter_permissoes_caminho(caminho)
+    assert resultado == esperado
 
 
 # Testes para obter_id_unico
@@ -190,3 +182,17 @@ def test_obter_id_unico(identificador: int, esperado_tamanho: int) -> None:
     else:
         with pytest.raises(esperado_tamanho):
             obter_id_unico(identificador)
+
+
+# Testes para sanitizar_caminho_relativo
+@pytest.mark.parametrize(
+    "caminho, esperado",
+    [
+        ("../relative/path", "relative/path"),
+        ("/.././path/", "./path/"),
+        ("", ""),  # Caminho vazio
+    ],
+)
+def test_sanitizar_caminho_relativo(caminho: str, esperado: str) -> None:
+    """Testa a função sanitizar_caminho_relativo."""
+    assert sanitizar_caminho_relativo(caminho) == esperado

@@ -13,10 +13,9 @@ Dependências:
 
 import json
 import logging
-from os import stat_result
 from pathlib import Path
 from typing import Union
-from services import (
+from .services import (
     obter_id_unico,
     obter_dados_caminho,
     obter_data_criacao,
