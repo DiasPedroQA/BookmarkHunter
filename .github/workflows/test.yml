@@ -46,7 +46,7 @@ jobs:
     - name: Run tests with pytest
       run: |
         source .venv/bin/activate
-        pytest tests/backend/ --cov=app --cov-report=term --cov-report=html --cov-report=xml
+        pytest tests/ --cov=app --cov-report=term --cov-report=html --cov-report=xml
 
     # 5. Upload dos relatórios de cobertura
     # Envia os relatórios gerados de cobertura de código como artefatos para o GitHub Actions.

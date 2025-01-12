@@ -38,6 +38,24 @@ def _fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
         raise ValueError("O caminho deve ser uma string válida.") from exc
 
 
+def _formatar_data(timestamp: float) -> str:
+    """
+    Formata um timestamp para o formato "dd/mm/yyyy hh:mm:ss".
+
+    Parâmetros:
+        timestamp (float): O timestamp a ser formatado.
+
+    Retorna:
+        str: O timestamp formatado.
+    """
+    try:
+        return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
+    except ValueError as exc:
+        return "Data inválida. Verifique o timestamp -> " + str(exc)
+    except TypeError as exc:
+        return "Tipo de dado inválido. Verifique o timestamp -> " + str(exc)
+
+
 def obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
     """
     Obtém informações detalhadas sobre o caminho, como diretório pai, nome do arquivo,
@@ -69,37 +87,25 @@ def obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
 
 def obter_tamanho_arquivo(tamanho_arquivo: int) -> str:
     """
-    Obtém o tamanho do arquivo em um formato legível, como bytes, KB, MB ou GB.
+    Calcula o tamanho de um arquivo em unidades legíveis (KB, MB, GB, etc.).
+    
+    Args:
+        numero (int): O tamanho do arquivo em bytes.
 
-    Parâmetros:
-        tamanho_arquivo (int): O tamanho do arquivo em bytes.
-
-    Retorna:
-        str: O tamanho do arquivo formatado de forma legível.
+    Returns:
+        str: Uma string indicando o valor convertido e a unidade correspondente.
     """
-    if tamanho_arquivo < 1024:
-        return f"{tamanho_arquivo} bytes"
-    if tamanho_arquivo < (1024**2):
-        return f"{tamanho_arquivo / 1024:.2f} KB"
-    if tamanho_arquivo < (1024**3):
-        return f"{tamanho_arquivo / (1024 ** 2):.2f} MB"
-    return f"{tamanho_arquivo / (1024 ** 3):.2f} GB"
+    if tamanho_arquivo <= 0:
+        raise ValueError("O tamanho deve ser maior que zero.")
 
+    unidades = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB"]
+    contador = 0
 
-def _formatar_data(timestamp: float) -> str:
-    """
-    Formata um timestamp para o formato "dd/mm/yyyy hh:mm:ss".
+    while tamanho_arquivo >= 1024 and contador < len(unidades) - 1:
+        tamanho_arquivo /= 1024
+        contador += 1
 
-    Parâmetros:
-        timestamp (float): O timestamp a ser formatado.
-
-    Retorna:
-        str: O timestamp formatado.
-    """
-    try:
-        return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
-    except (ValueError, TypeError):
-        return "Data inválida"
+    return f"{tamanho_arquivo:.2f} {unidades[contador]}"
 
 
 def obter_data_criacao(timestamp_data_criacao: float) -> str:
@@ -182,22 +188,20 @@ def obter_id_unico(identificador: int) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(identificador)))
 
 
-# # Exemplo de uso  # pylint: disable=C0103
-# if __name__ == "__main__":
-#     caminhos = [
-#         "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
-#         "/home/pedro-pm-dias/Downloads/Chrome/favoritos.html",
-#         "/home/pedro-pm-dias/Downloads/Chrome/",
-#         "/home/pedro-pm-dias/Downloads/Chrome/Teste/",
-#         "/caminho/inexistente/",
-#         "../../Downloads/Chrome/favoritos_23_12_2024.html",
-#         "../../Downloads/Chrome/favoritos.html",
-#         "../../Downloads/Chrome/",
-#         "../../Downloads/Chrome/Teste/",
-#     ]
+def sanitizar_caminho_relativo(caminho: str) -> str:
+    """
+    Remove caracteres especiais (../) e normaliza o caminho relativo.
+    
+    Args:
+        caminho (str): O caminho relativo a ser sanitizado.
 
-#     for caminho in caminhos:
-#         print(f"\nTeste: {caminho}")
-#         caminho_sanitizado = "/".join(_fatiar_caminho(caminho))
-#         print(f"Caminho sanitizado: {caminho_sanitizado}")
-#         print(f"Dados do caminho: {obter_dados_caminho(caminho_sanitizado)}")
+    Returns:
+        str: O caminho relativo sanitizado.
+    """
+    if str(caminho).startswith("/../"):
+        caminho = caminho.replace("/../", "../")
+
+    while str(caminho).startswith("../"):
+        caminho = caminho[3:]
+
+    return caminho
