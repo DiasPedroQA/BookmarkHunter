@@ -1,12 +1,14 @@
+# pylint: disable=E0611
+
 """
 Testes para as funções do módulo services.py.
 """
 
 from datetime import datetime, timezone, timedelta
 import pytest
-from app.services import (
+from app.services.file_services import obter_tamanho_arquivo
+from app.services.path_services import (
     obter_dados_caminho,
-    obter_tamanho_arquivo,
     obter_data_criacao,
     obter_data_modificacao,
     obter_data_acesso,
@@ -28,7 +30,7 @@ def formatar_data(timestamp: int) -> str:
     Returns:
         str: Data formatada no padrão "dd/mm/yyyy hh:mm:ss".
     """
-    tz_brasil = timezone(timedelta(hours=-3))
+    tz_brasil: timezone = timezone(timedelta(hours=-3))
     return datetime.fromtimestamp(timestamp, tz=tz_brasil).strftime("%d/%m/%Y %H:%M:%S")
 
 
@@ -63,15 +65,15 @@ def formatar_data(timestamp: int) -> str:
             "",
             {
                 "pasta_pai": "",
-            }
+            },
         ),  # Caminho vazio deve retornar {}
         (None, ValueError),  # Tipo inválido
     ],
 )
-def test_obter_dados_caminho(caminho: str, esperado):
+def test_obter_dados_caminho(caminho: str, esperado: dict[str, str]) -> None:
     """Testa a função obter_dados_caminho para arquivos e pastas."""
     if isinstance(esperado, dict):
-        resultado = obter_dados_caminho(caminho)
+        resultado: dict[str, str] = obter_dados_caminho(caminho)
         assert resultado == esperado
     else:
         with pytest.raises(esperado):
@@ -160,7 +162,7 @@ def test_datas(funcao, timestamp: int, esperado: str) -> None:
 )
 def test_obter_permissoes_caminho(caminho: str, esperado: dict[str, bool]) -> None:
     """Testa a função obter_permissoes_caminho."""
-    resultado = obter_permissoes_caminho(caminho)
+    resultado: dict[str, bool] = obter_permissoes_caminho(caminho)
     assert resultado == esperado
 
 
@@ -176,7 +178,7 @@ def test_obter_permissoes_caminho(caminho: str, esperado: dict[str, bool]) -> No
 def test_obter_id_unico(identificador: int, esperado_tamanho: int) -> None:
     """Testa a função obter_id_unico."""
     if isinstance(esperado_tamanho, int):
-        id_unico = obter_id_unico(identificador)
+        id_unico: str = obter_id_unico(identificador)
         assert isinstance(id_unico, str)
         assert len(id_unico) == esperado_tamanho
     else:

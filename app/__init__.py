@@ -1,10 +1,12 @@
+# pylint: disable=E0611
+
 """
 Arquivo __init__.py do pacote app.
 """
 
-from app.services import (
+from app.services.file_services import obter_tamanho_arquivo
+from app.services.path_services import (
     obter_dados_caminho,
-    obter_tamanho_arquivo,
     obter_data_criacao,
     obter_data_modificacao,
     obter_data_acesso,
@@ -25,8 +27,8 @@ from app.services import (
 #     return app
 
 __all__ = [
-    "obter_dados_caminho",
     "obter_tamanho_arquivo",
+    "obter_dados_caminho",
     "obter_data_criacao",
     "obter_data_modificacao",
     "obter_data_acesso",

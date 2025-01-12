@@ -31,7 +31,7 @@ def _fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
 
     Args:
         caminho_inteiro (str): O caminho completo que será dividido.
-        separador (str, opcional): O caractere separador usado para dividir o caminho. 
+        separador (str, opcional): O caractere separador usado para dividir o caminho.
             Padrão é "/".
 
     Returns:
@@ -84,37 +84,13 @@ def obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
         item = fatias[-1]
         if "." in item and not item.endswith("."):
             nome_arquivo, extensao_arquivo = item.rsplit(".", 1)
-            dados.update({"nome_arquivo": nome_arquivo, "extensao_arquivo": extensao_arquivo})
+            dados.update(
+                {"nome_arquivo": nome_arquivo, "extensao_arquivo": extensao_arquivo}
+            )
         else:
             dados.update({"nome_pasta": item})
 
     return dados
-
-
-def obter_tamanho_arquivo(tamanho_arquivo: int) -> str:
-    """
-    Converte o tamanho de um arquivo para um formato legível (KB, MB, etc.).
-
-    Args:
-        tamanho_arquivo (int): O tamanho do arquivo em bytes.
-
-    Returns:
-        str: O tamanho formatado com duas casas decimais e a unidade correspondente.
-
-    Raises:
-        ValueError: Se o tamanho for menor ou igual a zero.
-    """
-    if tamanho_arquivo <= 0:
-        raise ValueError("O tamanho deve ser maior que zero.")
-
-    unidades = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB"]
-    contador = 0
-
-    while tamanho_arquivo >= 1024 and contador < len(unidades) - 1:
-        tamanho_arquivo /= 1024
-        contador += 1
-
-    return f"{tamanho_arquivo:.2f} {unidades[contador]}"
 
 
 def obter_data_criacao(timestamp_data_criacao: float) -> str:

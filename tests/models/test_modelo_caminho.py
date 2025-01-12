@@ -1,102 +1,141 @@
-# pylint: disable=C, E, W
+"""
+Este módulo contém testes para o modelo de caminho (PathModel) da aplicação.
+Os testes verificam a funcionalidade do modelo para diferentes tipos de caminhos,
+incluindo caminhos absolutos e relativos, válidos e inválidos, arquivos e diretórios.
 
-import pytest
-from pathlib import Path
-from app.models import PathModel
+Testes incluídos:
+- teste_caminho_absoluto_valido: Testa um caminho absoluto válido.
+- teste_caminho_absoluto_invalido: Testa um caminho absoluto inválido.
+- teste_caminho_absoluto_pasta: Testa um caminho absoluto de pasta.
+- teste_caminho_absoluto_pasta_teste: Testa um caminho absoluto de pasta de teste.
+- teste_caminho_absoluto_inexistente: Testa um caminho absoluto inexistente.
+- test_caminho_relativo_valido: Testa um caminho relativo válido.
+- test_caminho_relativo_invalido: Testa um caminho relativo inválido.
+- test_caminho_relativo_pasta: Testa um caminho relativo de pasta.
+- test_caminho_relativo_pasta_teste: Testa um caminho relativo de pasta de teste.
+- test_caminho_relativo_inexistente: Testa um caminho relativo inexistente.
+- test_inicialization_path_model: Testa a inicialização do modelo PathModel.
+- test_caminho_valido: Testa a classe PathModel com um caminho válido.
+
+"""
+
+# pylint: disable=E0611, W0105
+
+from app.models.modelo_caminho import PathModel
 
 
 def teste_caminho_absoluto_valido():
+    """
+    Testa um caminho absoluto válido.
+    """
     test_caminho_absoluto_valido = (
         "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
     )
     caminho_modelo = PathModel(test_caminho_absoluto_valido)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == test_caminho_absoluto_valido
 
 
 def teste_caminho_absoluto_invalido():
+    """
+    Testa um caminho absoluto inválido.
+    """
     test_caminho_absoluto_invalido = (
         "/home/pedro-pm-dias/Downloads/Chrome/favoritos.html"
     )
     caminho_modelo = PathModel(test_caminho_absoluto_invalido)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == test_caminho_absoluto_invalido
 
 
 def teste_caminho_absoluto_pasta():
+    """
+    Testa um caminho absoluto de pasta.
+    """
     test_caminho_absoluto_pasta = "/home/pedro-pm-dias/Downloads/Chrome/"
     caminho_modelo = PathModel(test_caminho_absoluto_pasta)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == test_caminho_absoluto_pasta
 
 
 def teste_caminho_absoluto_pasta_teste():
+    """
+    Testa um caminho absoluto de pasta de teste.
+    """
     test_caminho_absoluto_pasta_teste = "/home/pedro-pm-dias/Downloads/Chrome/Teste/"
     caminho_modelo = PathModel(test_caminho_absoluto_pasta_teste)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == test_caminho_absoluto_pasta_teste
 
 
 def teste_caminho_absoluto_inexistente():
+    """
+    Testa um caminho absoluto inexistente.
+    """
     test_caminho_absoluto_inexistente = (
         "/home/pedro-pm-dias/Downloads/caminho/inexistente/"
     )
     caminho_modelo = PathModel(test_caminho_absoluto_inexistente)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == test_caminho_absoluto_inexistente
 
 
 def test_caminho_relativo_valido():
+    """
+    Testa um caminho relativo válido.
+    """
     teste_caminho_relativo_valido = "../../Downloads/Chrome/favoritos_23_12_2024.html"
     caminho_modelo = PathModel(teste_caminho_relativo_valido)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == teste_caminho_relativo_valido
 
 
 def test_caminho_relativo_invalido():
+    """
+    Testa um caminho relativo inválido.
+    """
     teste_caminho_relativo_invalido = "../../Downloads/Chrome/favoritos.html"
     caminho_modelo = PathModel(teste_caminho_relativo_invalido)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == teste_caminho_relativo_invalido
 
 
 def test_caminho_relativo_pasta():
+    """
+    Testa um caminho relativo de pasta.
+    """
     teste_caminho_relativo_pasta = "../../Downloads/Chrome/"
     caminho_modelo = PathModel(teste_caminho_relativo_pasta)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == teste_caminho_relativo_pasta
 
 
 def test_caminho_relativo_pasta_teste():
+    """
+    Testa um caminho relativo de pasta de teste.
+    """
     teste_caminho_relativo_pasta_teste = "../../Downloads/Chrome/Teste/"
     caminho_modelo = PathModel(teste_caminho_relativo_pasta_teste)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == teste_caminho_relativo_pasta_teste
 
 
 def test_caminho_relativo_inexistente():
+    """
+    Testa um caminho relativo inexistente.
+    """
     teste_caminho_relativo_inexistente = "../../Downloads/caminho/inexistente/"
     caminho_modelo = PathModel(teste_caminho_relativo_inexistente)
     dados_teste = caminho_modelo.gerar_dados()
-    pass
     # assert len(dados_teste["id_caminho"]) > 1
     assert dados_teste["caminho_original"] == teste_caminho_relativo_inexistente
 
