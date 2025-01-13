@@ -1,37 +1,62 @@
-# pylint: disable=E0611
-
 """
 Arquivo __init__.py do pacote app.
 """
 
-from app.services.file_services import obter_tamanho_arquivo
-from app.services.path_services import (
-    obter_dados_caminho,
-    obter_data_criacao,
-    obter_data_modificacao,
-    obter_data_acesso,
-    obter_permissoes_caminho,
-    obter_id_unico,
-)
-
-# from flask import Flask
-# from flask_cors import CORS
-# from controllers import register_routes
-
+# from flask import Flask, jsonify, request
+# from app.routes.routes import routes
+# from app.controllers.path_control import Path_Controller
+# from app.controllers.file_control import listar_arquivos, criar_arquivo, deletar_arquivo
 
 # def create_app():
-#     """Inicializa a aplicação Flask."""
-#     app = Flask(__name__)
-#     CORS(app)
-#     register_routes(app)
-#     return app
+#     """
+#     Inicializa e configura a aplicação Flask.
 
-__all__ = [
-    "obter_tamanho_arquivo",
-    "obter_dados_caminho",
-    "obter_data_criacao",
-    "obter_data_modificacao",
-    "obter_data_acesso",
-    "obter_permissoes_caminho",
-    "obter_id_unico",
-]
+#     Retorna:
+#         app (Flask): A aplicação Flask configurada.
+#     """
+#     app = Flask(__name__)
+
+#     # Registro de rotas utilizando Blueprint
+#     app.register_blueprint(routes, url_prefix="/api")
+
+#     # Rota para analisar caminhos
+#     @app.route("/analyze", methods=["POST"])
+#     def analyze():
+#         """
+#         Rota para analisar caminhos.
+#         """
+#         data = request.get_json()
+#         path = data.get("path")
+#         if not path:
+#             return jsonify({"error": "Path is required"}), 400
+#         controle = Path_Controller(path)
+#         return jsonify({
+#             "caminho_absoluto": controle._caminho_atual,
+#             "caminho_relativo": controle.caminho_entrada
+#         })
+
+#     # Rota para listar arquivos
+#     @app.route("/arquivos", methods=["GET"])
+#     def listar_arquivos_route():
+#         """
+#         Rota para listar arquivos.
+#         """
+#         return listar_arquivos()
+
+#     # Rota para criar arquivo
+#     @app.route("/arquivos", methods=["POST"])
+#     def criar_arquivo_route():
+#         """
+#         Rota para criar arquivo.
+#         """
+#         return criar_arquivo()
+
+#     # Rota para deletar arquivo
+#     @app.route("/arquivos/<int:id>", methods=["DELETE"])
+#     def deletar_arquivo_route(id):
+#         """
+#         Rota para deletar arquivo.
+#         """
+#         return deletar_arquivo(id)
+
+#     return app

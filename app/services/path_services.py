@@ -25,7 +25,7 @@ import os
 import uuid
 
 
-def _fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
+def fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
     """
     Divide um caminho em partes utilizando um separador e remove itens irrelevantes.
 
@@ -47,7 +47,7 @@ def _fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
         raise ValueError("O caminho deve ser uma string válida.") from exc
 
 
-def _formatar_data(timestamp: float) -> str:
+def formatar_data(timestamp: float) -> str:
     """
     Converte um timestamp em uma data legível no formato "dd/mm/yyyy hh:mm:ss".
 
@@ -77,7 +77,7 @@ def obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
             - "extensao_arquivo": Extensão do arquivo (se presente).
             - "nome_pasta": Nome da pasta (se o caminho for um diretório).
     """
-    fatias = _fatiar_caminho(caminho_resolvido)
+    fatias = fatiar_caminho(caminho_resolvido)
     dados = {"pasta_pai": "/".join(fatias[:-1]) if len(fatias) > 1 else ""}
 
     if fatias:
@@ -103,7 +103,7 @@ def obter_data_criacao(timestamp_data_criacao: float) -> str:
     Returns:
         str: A data de criação formatada.
     """
-    return _formatar_data(timestamp_data_criacao)
+    return formatar_data(timestamp_data_criacao)
 
 
 def obter_data_modificacao(timestamp_data_modificacao: float) -> str:
@@ -116,7 +116,7 @@ def obter_data_modificacao(timestamp_data_modificacao: float) -> str:
     Returns:
         str: A data de modificação formatada.
     """
-    return _formatar_data(timestamp_data_modificacao)
+    return formatar_data(timestamp_data_modificacao)
 
 
 def obter_data_acesso(timestamp_data_acesso: float) -> str:
@@ -129,7 +129,7 @@ def obter_data_acesso(timestamp_data_acesso: float) -> str:
     Returns:
         str: A data de acesso formatada.
     """
-    return _formatar_data(timestamp_data_acesso)
+    return formatar_data(timestamp_data_acesso)
 
 
 def obter_permissoes_caminho(caminho: str) -> dict[str, bool]:

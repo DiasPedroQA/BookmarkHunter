@@ -1,4 +1,4 @@
-# pylint: disable=E0611
+# pylint: disable=C, R, E, W
 
 """
 Testes para a função `obter_tamanho_arquivo` do módulo auxiliar de manipulação de arquivos.

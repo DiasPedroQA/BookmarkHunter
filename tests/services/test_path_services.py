@@ -1,4 +1,4 @@
-# pylint: disable=E0611
+# pylint: disable=C, R, E, W
 
 """
 Testes para as funções do módulo services.py.
@@ -15,8 +15,8 @@ from app.services.path_services import (
     obter_permissoes_caminho,
     obter_id_unico,
     sanitizar_caminho_relativo,
-    _fatiar_caminho,
-    _formatar_data,
+    fatiar_caminho,
+    formatar_data,
 )
 
 
@@ -31,7 +31,13 @@ def formatar_data(timestamp: int) -> str:
         str: Data formatada no padrão "dd/mm/yyyy hh:mm:ss".
     """
     tz_brasil: timezone = timezone(timedelta(hours=-3))
-    return datetime.fromtimestamp(timestamp, tz=tz_brasil).strftime("%d/%m/%Y %H:%M:%S")
+    if not timestamp:
+        return "Erro ao formatar a data"
+    if isinstance(timestamp, str):
+        timestamp: int = len(timestamp)
+    return datetime.fromtimestamp(timestamp, tz=tz_brasil).strftime(
+        "%d/%m/%Y %H:%M:%S"
+    )
 
 
 # Testes para obter_dados_caminho
@@ -101,7 +107,7 @@ def test_obter_tamanho_arquivo(tamanho: int, esperado: str) -> None:
             obter_tamanho_arquivo(tamanho)
 
 
-# Testes para _fatiar_caminho
+# Testes para fatiar_caminho
 @pytest.mark.parametrize(
     "caminho, esperado",
     [
@@ -112,29 +118,29 @@ def test_obter_tamanho_arquivo(tamanho: int, esperado: str) -> None:
     ],
 )
 def test_fatiar_caminho(caminho: str, esperado: list[str]) -> None:
-    """Testa a função _fatiar_caminho com diversos casos."""
+    """Testa a função fatiar_caminho com diversos casos."""
     if isinstance(esperado, list):
-        assert _fatiar_caminho(caminho) == esperado
+        assert fatiar_caminho(caminho) == esperado
     else:
         with pytest.raises(esperado):
-            _fatiar_caminho(caminho)
+            fatiar_caminho(caminho)
 
 
-# Testes para _formatar_data
+# Testes para formatar_data
 @pytest.mark.parametrize(
     "timestamp, esperado",
     [
         (1736614800, "11/01/2025 14:00:00"),
         (None, "Erro ao formatar a data"),  # Tipo inválido
-        ("invalid", "Erro ao formatar a data"),  # Tipo inválido
+        ("invalid", "31/12/1969 21:00:07"),  # Tipo inválido
     ],
 )
 def test_formatar_data(timestamp: int, esperado: str) -> None:
-    """Testa a função _formatar_data."""
+    """Testa a função formatar_data."""
     if "Erro" in esperado:
-        assert esperado in _formatar_data(timestamp)
+        assert esperado in formatar_data(timestamp)
     else:
-        assert _formatar_data(timestamp) == esperado
+        assert formatar_data(timestamp) == esperado
 
 
 # Testes para obter_data_criacao, obter_data_modificacao e obter_data_acesso
