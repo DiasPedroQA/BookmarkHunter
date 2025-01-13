@@ -28,6 +28,7 @@ sys.path.append(project_root)
 
 from app.services.file_services import obter_tamanho_arquivo
 from app.services.path_services import (
+    fatiar_caminho,
     obter_data_criacao,
     obter_data_modificacao,
     obter_data_acesso,
@@ -123,7 +124,7 @@ class PathModel:
 
         if path_resolvido.exists():
             return self._gerar_resposta_json(
-                "Caminho relativo resolvido e válido.",
+                mensagem="Caminho relativo resolvido e válido.",
                 caminho_original=self.caminho,
                 caminho_resolvido=str(path_resolvido),
                 tipo=self._determinar_tipo_caminho(path_resolvido),
@@ -184,20 +185,20 @@ class PathModel:
         self,
         mensagem: str,
         status: str = "OK",
-        **dados: Union[str, Dict[str, Union[str, int]]],
+        **dados_caminho: Union[str, Dict[str, Union[str, int]]],
     ) -> str:
         """
         Gera uma resposta formatada em JSON.
 
         :param mensagem: Mensagem descritiva do resultado.
         :param status: Status do resultado (OK, ERROR, etc.).
-        :param dados: Dados adicionais a serem incluídos.
+        :param dados_caminho: Dados adicionais a serem incluídos.
         :return: Resposta formatada como JSON.
         """
         resposta = {
             "mensagem": mensagem,
             "status": status,
-            "dados": dados,
+            "dados_caminho": dados_caminho,
         }
         return json.dumps(resposta, indent=4, ensure_ascii=False)
 

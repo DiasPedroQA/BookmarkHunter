@@ -123,5 +123,6 @@
     "**/.pytest_cache": true
   },
   "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["tests"]
+  "python.testing.pytestArgs": ["tests"],
+  "github-actions.workflows.pinned.workflows": [".github/workflows/test.yml"]
 }

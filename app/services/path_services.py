@@ -25,6 +25,22 @@ import os
 import uuid
 
 
+def formatar_data(timestamp: float) -> str:
+    """
+    Converte um timestamp em uma data legível no formato "dd/mm/yyyy hh:mm:ss".
+
+    Args:
+        timestamp (float): O timestamp que será formatado.
+
+    Returns:
+        str: A data formatada no padrão "dd/mm/yyyy hh:mm:ss", ou uma mensagem de erro.
+    """
+    try:
+        return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
+    except (ValueError, TypeError) as exc:
+        return f"Erro ao formatar a data: {exc}"
+
+
 def fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
     """
     Divide um caminho em partes utilizando um separador e remove itens irrelevantes.
@@ -47,22 +63,6 @@ def fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
         raise ValueError("O caminho deve ser uma string válida.") from exc
 
 
-def formatar_data(timestamp: float) -> str:
-    """
-    Converte um timestamp em uma data legível no formato "dd/mm/yyyy hh:mm:ss".
-
-    Args:
-        timestamp (float): O timestamp que será formatado.
-
-    Returns:
-        str: A data formatada no padrão "dd/mm/yyyy hh:mm:ss", ou uma mensagem de erro.
-    """
-    try:
-        return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
-    except (ValueError, TypeError) as exc:
-        return f"Erro ao formatar a data: {exc}"
-
-
 def obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
     """
     Extrai informações detalhadas de um caminho, como o diretório pai, nome e extensão.
@@ -78,7 +78,10 @@ def obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
             - "nome_pasta": Nome da pasta (se o caminho for um diretório).
     """
     fatias = fatiar_caminho(caminho_resolvido)
-    dados = {"pasta_pai": "/".join(fatias[:-1]) if len(fatias) > 1 else ""}
+    dados = {
+        "pasta_pai": "/".join(fatias[:-1]) if len(fatias) > 1 else "",
+        "nome_item": fatias[-1],
+    }
 
     if fatias:
         item = fatias[-1]
