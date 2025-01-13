@@ -37,8 +37,10 @@ def formatar_data(timestamp: float) -> str:
     """
     try:
         return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
-    except (ValueError, TypeError) as exc:
-        return f"Erro ao formatar a data: {exc}"
+    except TypeError as erro_tipo:
+        return f"Erro de tipo: {erro_tipo}"
+    except ValueError as erro_value:
+        return f"Erro de valor -> {erro_value}"
 
 
 def fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
@@ -80,7 +82,6 @@ def obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
     fatias = fatiar_caminho(caminho_resolvido)
     dados = {
         "pasta_pai": "/".join(fatias[:-1]) if len(fatias) > 1 else "",
-        "nome_item": fatias[-1],
     }
 
     if fatias:
