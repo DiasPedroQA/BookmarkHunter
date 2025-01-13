@@ -88,7 +88,7 @@ if __name__ == "__main__":
         "/home/pedro-pm-dias/Downloads/Chrome/favoritos_link_simbólico",  # Exemplo de link simbólico
     ]
 
-    for caminho in caminhos_para_validar:
-        file_obj = FileModel(caminho)
-        file_obj_json = file_obj.gerar_dados()
-        print('\n', file_obj_json, end="\n\n")
+    # for caminho in caminhos_para_validar:
+    #     file_obj = FileModel(caminho)
+    #     file_obj_json = file_obj.gerar_dados()
+    #     print('\n', file_obj_json, end="\n\n")
