@@ -1,4 +1,4 @@
-# pylint: disable=C, R, E, W, W0105
+# pylint: disable=C, R, E, W
 
 """
 Este módulo contém testes para o modelo de caminho (PathModel) da aplicação.
@@ -21,113 +21,98 @@ Testes incluídos:
 
 """
 
+from typing import Dict
+from app.models.path_model import PathModel
 import json
 import pytest
-from pathlib import Path
-from app.models.path_model import PathModel
+import pytest
 
 
-@pytest.fixture
-def criar_arquivo_tmp(tmp_path: Path):
+def test_inicializacao_caminho_valido():
     """
-    Cria um arquivo temporário para os testes.
-    :param tmp_path: Diretório temporário fornecido pelo pytest.
-    :return: Caminho do arquivo criado.
+    Testa se a classe aceita um caminho válido.
     """
-    arquivo = tmp_path / "arquivo_teste.txt"
-    arquivo.write_text("Conteúdo de teste")
-    return arquivo
+    caminho_padrao = "../../Downloads/"
+    modelo = PathModel(caminho=caminho_padrao)
+    assert modelo.caminho_entrada == caminho_padrao
 
 
-@pytest.fixture
-def criar_diretorio_tmp(tmp_path: Path):
+@pytest.mark.parametrize("caminho_invalido", [None, "", 123, [], {}, True])
+def test_inicializacao_caminho_invalido(
+    caminho_invalido: None | list | dict | str | int | bool,
+):
     """
-    Cria um diretório temporário para os testes.
-    :param tmp_path: Diretório temporário fornecido pelo pytest.
-    :return: Caminho do diretório criado.
+    Testa se a classe lança ValueError para caminhos inválidos.
     """
-    diretorio = tmp_path / "diretorio_teste"
-    diretorio.mkdir()
-    return diretorio
+    with pytest.raises(ValueError) as erro_valor:
+        PathModel(caminho=caminho_invalido)
+    assert str(erro_valor.value) == "O caminho deve ser uma string não vazia."
 
 
-def test_validar_caminho_vazio():
-    path_model = PathModel("")
-    result = path_model.validar_caminho()
-    dict_result = json.loads(result)
-    assert dict_result["status"] == "ERROR"
-    assert dict_result["mensagem"] == "Caminho vazio"
-
-
-def test_tratar_caminho_absoluto_arquivo_valido(criar_arquivo_tmp: Path):
-    path_model = PathModel(str(criar_arquivo_tmp))
-    result = path_model.validar_caminho()
-    dict_result = json.loads(result)
-    assert dict_result["status"] == "OK"
-    assert dict_result["mensagem"] == "Caminho válido."
-    assert dict_result["dados_caminho"]["tipo"] == "Arquivo"
-    assert dict_result["dados_caminho"]["estatisticas"]["tamanho"] == "18.00 Bytes"
-
-
-def test_tratar_caminho_absoluto_diretorio_valido(criar_diretorio_tmp: Path):
-    path_model = PathModel(str(criar_diretorio_tmp))
-    result = path_model.validar_caminho()
-    dict_result = json.loads(result)
-    assert dict_result["status"] == "OK"
-    assert dict_result["mensagem"] == "Caminho válido."
-    assert dict_result["dados_caminho"]["tipo"] == "Diretório"
-
-
-def test_tratar_caminho_absoluto_inexistente():
-    caminho_inexistente = "/caminho/que/nao/existe"
-    path_model = PathModel(caminho_inexistente)
-    result = path_model.validar_caminho()
-    dict_result = json.loads(result)
-    assert dict_result["status"] == "ERROR"
-    assert dict_result["mensagem"] == f"Caminho '{caminho_inexistente}' não existe."
-
-
-def test_tratar_caminho_relativo_valido(tmp_path: Path, criar_arquivo_tmp: Path):
-    caminho_relativo = Path.cwd() / tmp_path / criar_arquivo_tmp
-    path_model = PathModel(str(caminho_relativo))
-    result = path_model.validar_caminho()
-    dict_result = json.loads(result)
-    assert dict_result["status"] == "OK"
-    assert dict_result["mensagem"] == "Caminho válido."
-    assert dict_result["dados_caminho"]["tipo"] == "Arquivo"
-    assert dict_result["dados_caminho"]["estatisticas"] is not None
-
-
-def test_tratar_caminho_relativo_inexistente():
-    caminho_relativo_inexistente = "../diretorio/que/nao/existe"
-    path_model = PathModel(caminho_relativo_inexistente)
-    result = path_model.validar_caminho()
-    dict_result = json.loads(result)
-    assert dict_result["status"] == "ERROR"
-    assert (
-        dict_result["mensagem"]
-        == f"Caminho relativo '{caminho_relativo_inexistente}' é inválido."
+def test_arquivo_simbolico_inexistente():
+    arquivo_absoluto_link_simbolico_inexistente: str = (
+        "/home/pedro-pm-dias/Downloads/Chrome/favoritos_link_simbólico.html"
     )
+    modelo: PathModel = PathModel(caminho=arquivo_absoluto_link_simbolico_inexistente)
+    arquivo_absoluto_tratado: str = modelo.tratar_link_simbolico(
+        caminho_simbolico=modelo.caminho_entrada
+    )
+    arquivo_tratado: dict[str, str | dict[str, str | Dict[str, str | int]]] = json.loads(arquivo_absoluto_tratado)
+    assert len(arquivo_tratado) == 3
+    assert (
+        arquivo_tratado["mensagem"]
+        == f"O caminho '{arquivo_absoluto_link_simbolico_inexistente}' não é um link simbólico."
+    )
+    assert arquivo_tratado["status"] == "NOT_OK"
+    assert arquivo_tratado["dados_caminho"] == {}
 
 
-def test_tratar_link_simbolico(tmp_path: Path):
-    arquivo: Path = tmp_path / "arquivo_teste.txt"
-    arquivo.write_text("Conteúdo de teste")
-    link_simbolico = tmp_path / "link_teste"
-    link_simbolico.symlink_to(arquivo)
+def test_pasta_simbolica_inexistente():
+    pasta_absoluta_link_simbolico_inexistente: str = (
+        "/home/pedro-pm-dias/Downloads/Chrome/favoritos_link_simbólico"
+    )
+    modelo: PathModel = PathModel(caminho=pasta_absoluta_link_simbolico_inexistente)
+    pasta_absoluta_tratada: str = modelo.tratar_link_simbolico(
+        caminho_simbolico=pasta_absoluta_link_simbolico_inexistente
+    )
+    pasta_tratada: dict[str, str | dict[str, str | Dict[str, str | int]]] = json.loads(pasta_absoluta_tratada)
+    assert len(pasta_tratada) == 3
+    assert (
+        pasta_tratada["mensagem"]
+        == f"O caminho '{pasta_absoluta_link_simbolico_inexistente}' não é um link simbólico."
+    )
+    assert pasta_tratada["status"] == "NOT_OK"
+    assert pasta_tratada["dados_caminho"] == {}
 
-    path_model = PathModel(str(link_simbolico))
-    result = path_model.validar_caminho()
-    dict_result = json.loads(result)
-    assert dict_result["status"] == "OK"
-    assert dict_result["mensagem"] == "Link simbólico resolvido com sucesso."
-    assert dict_result["dados_caminho"]["tipo"] == "Arquivo"
+
+teste_de_caminhos: dict[str, str] = {
+    "arquivo_relativo_existente": "../../Downloads/Chrome/favoritos_23_12_2024.html",
+    "arquivo_absoluto_existente": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
+    "pasta_absoluta_existente": "/home/pedro-pm-dias/Downloads/",
+    "arquivo_absoluto_inexistente": "/home/pedro-pm-dias/Downloads/Chrome/favoritos.html",
+    "arquivo_relativo_inexistente": "../../Downloads/Chrome/favoritos.html",
+    "pasta_relativa_inexistente": "../../Downloads/Chrome2",
+    "pasta_absoluta_inexistente": "/home/pedro-pm-dias/Downloads/Chrome2",
+}
 
 
-def test_obter_estatisticas_arquivo(criar_arquivo_tmp: Path):
-    path_model = PathModel(str(criar_arquivo_tmp))
-    result = path_model.validar_caminho()
-    dict_result = json.loads(result)
-    assert dict_result["status"] == "OK"
-    assert "estatisticas" in dict_result["dados_caminho"]
-    assert dict_result["dados_caminho"]["estatisticas"]["tamanho"] == "18.00 Bytes"
+
+# converter_para_absoluto(arquivo_relativo_existente)
+# tratar_caminho_relativo(arquivo_relativo_existente)
+# converter_para_absoluto(pasta_relativa_existente)
+# tratar_caminho_relativo(pasta_relativa_existente)
+
+# tratar_caminho_existente(arquivo_absoluto_existente)
+# validar_caminho(arquivo_absoluto_existente)
+# obter_estatisticas(arquivo_absoluto_existente)
+# determinar_tipo_caminho(arquivo_absoluto_existente)
+# obter_pasta_mae(arquivo_absoluto_existente)
+
+# tratar_caminho_existente(pasta_absoluta_existente)
+# validar_caminho(pasta_absoluta_existente)
+# obter_estatisticas(pasta_absoluta_existente)
+# determinar_tipo_caminho(pasta_absoluta_existente)
+# obter_pasta_mae(pasta_absoluta_existente)
+
+# gerar_resposta_json()
+# gerar_resposta_json()

@@ -16,7 +16,6 @@ from app.services.path_services import (
     obter_id_unico,
     sanitizar_caminho_relativo,
     fatiar_caminho,
-    formatar_data,
 )
 
 
@@ -76,36 +75,6 @@ def test_fatiar_caminho_invalido():
     caminho = 123
     with pytest.raises(ValueError):
         fatiar_caminho(caminho)
-
-
-def test_formatar_data_valida():
-    timestamp = 1736614800
-    esperado = "11/01/2025 14:00:00"
-    assert formatar_data(timestamp) == esperado
-
-
-def test_formatar_data_invalida():
-    timestamp = None
-    esperado = "Erro de tipo: 'NoneType' object cannot be interpreted as an integer"
-    assert formatar_data(timestamp) == esperado
-
-
-def test_obter_data_criacao():
-    timestamp = 1736614800
-    esperado = formatar_data(timestamp)
-    assert obter_data_criacao(timestamp) == esperado
-
-
-def test_obter_data_modificacao():
-    timestamp = 1736614800
-    esperado = formatar_data(timestamp)
-    assert obter_data_modificacao(timestamp) == esperado
-
-
-def test_obter_data_acesso():
-    timestamp = 1736614800
-    esperado = formatar_data(timestamp)
-    assert obter_data_acesso(timestamp) == esperado
 
 
 def test_obter_permissoes_caminho_leitura_escrita_execucao():

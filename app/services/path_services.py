@@ -25,7 +25,7 @@ import os
 import uuid
 
 
-def formatar_data(timestamp: float) -> str:
+def _formatar_data(timestamp: float) -> str:
     """
     Converte um timestamp em uma data legível no formato "dd/mm/yyyy hh:mm:ss".
 
@@ -107,7 +107,7 @@ def obter_data_criacao(timestamp_data_criacao: float) -> str:
     Returns:
         str: A data de criação formatada.
     """
-    return formatar_data(timestamp_data_criacao)
+    return _formatar_data(timestamp_data_criacao)
 
 
 def obter_data_modificacao(timestamp_data_modificacao: float) -> str:
@@ -120,7 +120,7 @@ def obter_data_modificacao(timestamp_data_modificacao: float) -> str:
     Returns:
         str: A data de modificação formatada.
     """
-    return formatar_data(timestamp_data_modificacao)
+    return _formatar_data(timestamp_data_modificacao)
 
 
 def obter_data_acesso(timestamp_data_acesso: float) -> str:
@@ -133,7 +133,7 @@ def obter_data_acesso(timestamp_data_acesso: float) -> str:
     Returns:
         str: A data de acesso formatada.
     """
-    return formatar_data(timestamp_data_acesso)
+    return _formatar_data(timestamp_data_acesso)
 
 
 def obter_permissoes_caminho(caminho: str) -> dict[str, bool]:
