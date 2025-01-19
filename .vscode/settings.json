@@ -133,5 +133,5 @@
   },
   "python.testing.pytestEnabled": true,
   "python.testing.pytestArgs": ["tests"],
-  "github-actions.workflows.pinned.workflows": [".github/workflows/test.yml"]
+  "github-actions.workflows.pinned.workflows": []
 }

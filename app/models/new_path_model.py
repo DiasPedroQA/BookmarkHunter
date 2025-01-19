@@ -2,289 +2,251 @@
 
 import re
 from pathlib import Path
+from typing import Dict, Union
 
-class AnalisadorCaminho:
+
+class AnalisadorCaminhoIntegrado:
     """
-    Classe para analisar caminhos de arquivos e pastas no sistema operacional Ubuntu.
-    Trabalha com strings e utiliza regex como auxiliar para validações.
-    """
+    Classe para analisar e manipular caminhos de arquivos e diretórios.
 
-    def __init__(self, caminho):
-        """
-        Inicializa o analisador com um caminho fornecido.
+    Atributos:
+        caminho (str): O caminho inicial fornecido.
+        diretorio_referencia (str): O diretório de referência para caminhos relativos.
+        caminho_pathlib (Path): Objeto Path do módulo pathlib para manipulação de caminhos.
 
-        :param caminho: Caminho do arquivo ou pasta como string.
-        """
-        self.caminho = caminho
+    Métodos:
+        __init__(caminho_inicial: str, referencia_dir: str = "") -> None:
+            Inicializa a classe com o caminho inicial e o diretório de referência.
 
-    def caminho_eh_absoluto(self):
-        """
-        Verifica se o caminho é absoluto com base em regras simples.
+        eh_absoluto() -> bool:
+            Verifica se o caminho é absoluto.
 
-        :return: True se começar com '/', False caso contrário.
-        """
-        return self.caminho.startswith("/")
+        eh_relativo() -> bool:
+            Verifica se o caminho é relativo.
 
-    def caminho_eh_relativo(self):
-        """
-        Verifica se o caminho é relativo (não absoluto).
+        eh_valido() -> bool:
+            Verifica se o caminho é válido com base em um padrão regex.
 
-        :return: True se o caminho for relativo, False caso contrário.
-        """
-        return not self.caminho_eh_absoluto()
+        obter_nome() -> str:
+            Obtém o nome do arquivo ou diretório do caminho.
 
-    def caminho_eh_caminho_valido(self):
-        """
-        Verifica se o caminho contém apenas caracteres válidos.
+        obter_nome_sem_extensao() -> str:
+            Obtém o nome do arquivo sem a extensão.
 
-        :return: True se o caminho for válido, False caso contrário.
-        """
-        padrao = r"^[\w\-./]+$"
-        return bool(re.match(padrao, self.caminho))
+        obter_extensao() -> str:
+            Obtém a extensão do arquivo.
 
-    def caminho_obter_nome_arquivo(self):
-        """
-        Retorna o nome do arquivo ou pasta no final do caminho.
+        obter_diretorio_pai() -> str:
+            Obtém o diretório pai do caminho.
 
-        :return: O nome do arquivo ou pasta.
-        """
-        partes = self.caminho.rstrip("/").split("/")
-        return partes[-1] if partes else ""
+        possui_extensao(extensao: str) -> bool:
+            Verifica se o caminho possui a extensão fornecida.
 
-    def caminho_obter_diretorio(self):
-        """
-        Retorna o diretório pai do caminho fornecido.
+        contar_segmentos() -> int:
+            Conta o número de segmentos no caminho.
 
-        :return: O diretório pai.
-        """
-        if "/" not in self.caminho.rstrip("/"):
-            return ""
-        return "/".join(self.caminho.rstrip("/").split("/")[:-1])
+        obter_metadados() -> Dict[str, Union[int, float]]:
+            Obtém os metadados do caminho se ele existir.
 
-    def caminho_possui_extensao(self, extensao):
-        """
-        Verifica se o caminho possui uma extensão específica.
+        resolver_caminho() -> str:
+            Resolve o caminho absoluto do caminho fornecido.
 
-        :param extensao: Extensão do arquivo (e.g., '.html').
-        :return: True se o arquivo tiver a extensão, False caso contrário.
-        """
-        return self.caminho.endswith(extensao)
+        converter_para_relativo() -> str:
+            Converte o caminho para um caminho relativo com base no diretório de referência.
 
-    def caminho_contar_segmentos(self):
-        """
-        Conta quantos segmentos existem no caminho.
+        converter_para_absoluto() -> str:
+            Converte o caminho para um caminho absoluto com base no diretório de referência.
 
-        :return: Número de segmentos no caminho.
-        """
-        return len([segmento for segmento in self.caminho.strip("/").split("/") if segmento])
-
-    def caminho_converter_para_relativo(self, diretorio_referencia):
-        """
-        Converte o caminho absoluto para relativo, baseado em um diretório de referência.
-
-        :param diretorio_referencia: Caminho absoluto para ser usado como referência.
-        :return: Caminho relativo.
-        """
-        if self.caminho_eh_absoluto():
-            return Path(self.caminho).relative_to(diretorio_referencia)
-        return self.caminho
-
-    def caminho_converter_para_absoluto(self, diretorio_referencia):
-        """
-        Converte um caminho relativo para absoluto, baseado em um diretório de referência.
-
-        :param diretorio_referencia: Caminho absoluto para ser usado como referência.
-        :return: Caminho absoluto.
-        """
-        if self.caminho_eh_relativo():
-            return str(Path(diretorio_referencia) / self.caminho)
-        return self.caminho
-
-
-class AnalisadorPathlib(AnalisadorCaminho):
-    """
-    Classe para análise de caminhos de arquivos e pastas utilizando pathlib.
-    Herda funcionalidades de AnalisadorCaminho e expande com recursos adicionais.
+        obter_informacoes_combinadas() -> dict:
+            Obtém várias informações combinadas sobre o caminho, incluindo metadados, se disponíveis.
     """
 
-    def __init__(self, caminho):
-        """
-        Inicializa o analisador com um caminho fornecido.
-
-        :param caminho: Caminho do arquivo ou pasta como string ou objeto Path.
-        """
-        super().__init__(caminho)  # Inicializa AnalisadorCaminho
+    def __init__(self, caminho_inicial: str, referencia_dir: str = "") -> None:
+        self.caminho: str = caminho_inicial
+        self.diretorio_referencia: str = referencia_dir
         self.caminho_pathlib = Path(caminho)
 
-    def pathlib_eh_arquivo(self):
-        """
-        Verifica se o caminho é um arquivo.
+    def eh_absoluto(self) -> bool:
+        try:
+            return self.caminho_pathlib.is_absolute()
+        except AttributeError as e:
+            print(f"Erro ao verificar se é absoluto: {e}")
+            return False
 
-        :return: True se for um arquivo, False caso contrário.
-        """
-        return self.caminho_pathlib.is_file()
+    def eh_relativo(self) -> bool:
+        try:
+            return not self.eh_absoluto()
+        except AttributeError as e:
+            print(f"Erro ao verificar se é relativo: {e}")
+            return False
 
-    def pathlib_eh_diretorio(self):
-        """
-        Verifica se o caminho é um diretório.
+    def eh_valido(self) -> bool:
+        try:
+            padrao = r"^[\w\-./]+$"
+            return bool(re.match(padrao, self.caminho))
+        except re.error as e:
+            print(f"Erro ao validar caminho: {e}")
+            return False
 
-        :return: True se for um diretório, False caso contrário.
-        """
-        return self.caminho_pathlib.is_dir()
+    def obter_nome(self) -> str:
+        try:
+            return self.caminho_pathlib.name
+        except AttributeError as e:
+            print(f"Erro ao obter nome: {e}")
+            return ""
 
-    def pathlib_obter_nome(self):
-        """
-        Retorna o nome do arquivo ou diretório.
+    def obter_nome_sem_extensao(self) -> str:
+        try:
+            return self.caminho_pathlib.stem
+        except AttributeError as e:
+            print(f"Erro ao obter nome sem extensão: {e}")
+            return ""
 
-        :return: Nome do arquivo ou diretório como string.
-        """
-        return self.caminho_pathlib.name
+    def obter_extensao(self) -> str:
+        try:
+            return self.caminho_pathlib.suffix
+        except AttributeError as e:
+            print(f"Erro ao obter extensão: {e}")
+            return ""
 
-    def pathlib_obter_nome_sem_extensao(self):
-        """
-        Retorna o nome do arquivo sem a extensão.
+    def obter_diretorio_pai(self) -> str:
+        try:
+            return str(self.caminho_pathlib.parent)
+        except AttributeError as e:
+            print(f"Erro ao obter diretório pai: {e}")
+            return ""
 
-        :return: Nome do arquivo sem extensão.
-        """
-        return self.caminho_pathlib.stem
+    def possui_extensao(self, extensao: str) -> bool:
+        try:
+            return self.caminho.endswith(extensao)
+        except AttributeError as e:
+            print(f"Erro ao verificar extensão: {e}")
+            return False
 
-    def pathlib_obter_extensao(self):
-        """
-        Retorna a extensão do arquivo.
+    def contar_segmentos(self) -> int:
+        try:
+            return len(self.caminho_pathlib.parts)
+        except AttributeError as e:
+            print(f"Erro ao contar segmentos: {e}")
+            return 0
 
-        :return: Extensão do arquivo como string.
-        """
-        return self.caminho_pathlib.suffix
+    def obter_metadados(self) -> Dict[str, Union[int, float]]:
+        try:
+            if self.caminho_pathlib.exists():
+                estatisticas = self.caminho_pathlib.stat()
+                return {
+                    "tamanho_bytes": estatisticas.st_size,
+                    "criado": estatisticas.st_ctime,
+                    "modificado": estatisticas.st_mtime,
+                    "ultimo_acesso": estatisticas.st_atime,
+                    "permissoes": estatisticas.st_mode,
+                    "dispositivo": estatisticas.st_dev,
+                    "inode": estatisticas.st_ino,
+                    "links": estatisticas.st_nlink,
+                    "id_usuario": estatisticas.st_uid,
+                    "id_grupo": estatisticas.st_gid,
+                    "eh_link_simbolico": self.caminho_pathlib.is_symlink(),
+                    "eh_ponto_montagem": self.caminho_pathlib.is_mount(),
+                    "existe": self.caminho_pathlib.exists(),
+                }
+            else:
+                return {}
+        except OSError as e:
+            print(f"Erro ao obter metadados: {e}")
+            return {}
 
-    def pathlib_obter_pai(self):
-        """
-        Retorna o diretório pai do caminho.
+    def resolver_caminho(self) -> str:
+        try:
+            return str(self.caminho_pathlib.resolve())
+        except OSError as e:
+            print(f"Erro ao resolver caminho: {e}")
+            return ""
 
-        :return: Diretório pai como objeto Path.
-        """
-        return self.caminho_pathlib.parent
+    def converter_para_relativo(self) -> str:
+        try:
+            if self.eh_absoluto():
+                return str(self.caminho_pathlib.relative_to(self.diretorio_referencia))
+            return str(self.caminho_pathlib)
+        except ValueError as e:
+            print(f"Erro ao converter para caminho relativo: {e}")
+            return ""
 
-    def pathlib_existe(self):
-        """
-        Verifica se o caminho existe.
+    def converter_para_absoluto(self) -> str:
+        try:
+            if self.eh_relativo():
+                return str(
+                    (Path(self.diretorio_referencia) / self.caminho_pathlib).resolve()
+                )
+            return str(self.caminho_pathlib)
+        except ValueError as e:
+            print(f"Erro ao converter para caminho absoluto: {e}")
+            return ""
 
-        :return: True se existir, False caso contrário.
-        """
-        return self.caminho_pathlib.exists()
+    def obter_informacoes_combinadas(self) -> dict:
+        try:
+            info_combinadas = {
+                "eh_absoluto": self.eh_absoluto(),
+                "eh_valido": self.eh_valido(),
+                "nome_caminho": self.obter_nome(),
+                "diretorio_pai": self.obter_diretorio_pai(),
+                "extensao": self.obter_extensao(),
+                "possui_extensao": self.possui_extensao(self.obter_extensao()),
+                "contagem_segmentos": self.contar_segmentos(),
+                "eh_arquivo": self.caminho_pathlib.is_file(),
+                "eh_diretorio": self.caminho_pathlib.is_dir(),
+                "nome_sem_extensao": self.obter_nome_sem_extensao(),
+            }
 
-    def pathlib_eh_absoluto(self):
-        """
-        Verifica se o caminho é absoluto.
+            # Tentar usar caminho absoluto se o caminho não for encontrado
+            if (
+                not self.caminho_pathlib.exists()
+                and self.eh_relativo()
+                and self.eh_valido()
+            ):
+                caminho_absoluto = self.converter_para_absoluto()
+                if Path(caminho_absoluto).exists():
+                    self.caminho_pathlib = Path(caminho_absoluto)
+                    info_combinadas["metadados"] = self.obter_metadados()
+                else:
+                    info_combinadas["erro"] = (
+                        "O caminho absoluto montado não foi encontrado."
+                    )
+            else:
+                # Verificar metadados se o caminho existir
+                if self.caminho_pathlib.exists():
+                    informacoes["metadados"] = self.obter_metadados()
+                else:
+                    info_combinadas["metadados"] = None
+                    info_combinadas["erro"] = (
+                        "O caminho não existe, não é possível obter metadados."
+                    )
 
-        :return: True se for absoluto, False caso contrário.
-        """
-        return self.caminho_pathlib.is_absolute()
+            # Obter caminhos resolvidos
+            info_combinadas["caminho_relativo"] = self.converter_para_relativo()
+            info_combinadas["caminho_absoluto"] = self.converter_para_absoluto()
 
-    def pathlib_obter_metadados(self):
-        """
-        Obtém metadados detalhados do caminho.
-
-        :return: Dicionário com informações detalhadas.
-        """
-        estatisticas = self.caminho_pathlib.stat()
-        return {
-            "tamanho_bytes": estatisticas.st_size,
-            "criado": estatisticas.st_ctime,
-            "modificado": estatisticas.st_mtime,
-            "ultimo_acesso": estatisticas.st_atime,
-            "permissoes": estatisticas.st_mode,
-            "dispositivo": estatisticas.st_dev,
-            "inode": estatisticas.st_ino,
-            "links": estatisticas.st_nlink,
-            "id_usuario": estatisticas.st_uid,
-            "id_grupo": estatisticas.st_gid,
-            "eh_link_simbolico": self.caminho_pathlib.is_symlink(),
-            "eh_ponto_montagem": self.caminho_pathlib.is_mount(),
-            "existe": self.caminho_pathlib.exists(),
-        }
-
-    def pathlib_resolver_caminho(self):
-        """
-        Retorna o caminho absoluto e resolvido (sem "." ou "..").
-
-        :return: Caminho absoluto resolvido como objeto Path.
-        """
-        return self.caminho_pathlib.resolve()
-
-    def pathlib_contar_segmentos(self):
-        """
-        Conta o número de segmentos no caminho.
-
-        :return: Número de segmentos como inteiro.
-        """
-        return len(self.caminho_pathlib.parts)
-
-    def obter_informacoes_combinadas(self):
-        """
-        Obtém um dicionário contendo todas as informações detalhadas.
-
-        :return: Dicionário com informações do caminho.
-        """
-        return {
-            "eh_absoluto": self.pathlib_eh_absoluto(),
-            "eh_valido": self.caminho_eh_caminho_valido(),
-            "nome_arquivo": self.caminho_obter_nome_arquivo(),
-            "diretorio": self.caminho_obter_diretorio(),
-            "possui_extensao": self.caminho_possui_extensao(self.pathlib_obter_extensao()),
-            "contagem_segmentos": self.caminho_contar_segmentos(),
-            "eh_arquivo": self.pathlib_eh_arquivo(),
-            "eh_diretorio": self.pathlib_eh_diretorio(),
-            "nome": self.pathlib_obter_nome(),
-            "nome_sem_extensao": self.pathlib_obter_nome_sem_extensao(),
-            "extensao": self.pathlib_obter_extensao(),
-            "pai": str(self.pathlib_obter_pai()),
-            "metadados": self.pathlib_obter_metadados(),
-            "caminho_resolvido": str(self.pathlib_resolver_caminho()),
-        }
-
-    def pathlib_converter_para_relativo(self, diretorio_referencia):
-        """
-        Converte o caminho absoluto para relativo, baseado em um diretório de referência.
-
-        :param diretorio_referencia: Caminho absoluto para ser usado como referência.
-        :return: Caminho relativo.
-        """
-        if self.pathlib_eh_absoluto():
-            return self.caminho_pathlib.relative_to(diretorio_referencia)
-        return self.caminho_pathlib
-
-    def pathlib_converter_para_absoluto(self, diretorio_referencia):
-        """
-        Converte um caminho relativo para absoluto, baseado em um diretório de referência.
-
-        :param diretorio_referencia: Caminho absoluto para ser usado como referência.
-        :return: Caminho absoluto.
-        """
-        if self.pathlib_eh_relativo():
-            return self.caminho_pathlib.resolve()
-        return self.caminho_pathlib
+            return info_combinadas
+        except (OSError, ValueError, AttributeError) as e:
+            print(f"Erro ao obter informações combinadas: {e}")
+            return {}
 
 
-if __name__ == "__main__":
-    # Caminho para análise
-    caminhos_para_ler = [
-        "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
-        "/home/pedro-pm-dias/Downloads/Chrome/",
-        "../../Downloads/Chrome/favoritos_23_12_2024.html",
-        "../../Downloads/Chrome/",
-    ]
-    
-    for caminho in caminhos_para_ler:
-        # Inicializar o objeto AnalisadorPathlib
-        analisador = AnalisadorPathlib(caminho)
-        
-        # Obter as informações detalhadas individualmente
-        informacoes = analisador.obter_informacoes_combinadas()
-        
-        print('_' * 50)
-        for chave, valor in informacoes.items():
-            if isinstance(valor, dict):
-                for chaveIN, valorIN in valor.items():
-                    print(f"{chaveIN}: {valorIN}")
-            print(f"{chave}: {valor}")
-        print('_' * 50)
+# Exemplo de uso com os caminhos fornecidos
+caminhos = [
+    "../../Downloads/Chrome/",  # Exemplo de caminho relativo de pasta
+    "../../Downloads/Chrome/favoritos_23_12_2024.html",  # Exemplo de caminho relativo de arquivo
+]
+
+# Instancia e realiza algumas operações com AnalisadorCaminhoIntegrado
+diretorio_referencia = "/home/pedro-pm-dias/Downloads/Chrome"
+
+for caminho in caminhos:
+    analisador = AnalisadorCaminhoIntegrado(
+        caminho_inicial=caminho, referencia_dir=diretorio_referencia
+    )
+    informacoes = analisador.obter_informacoes_combinadas()
+
+    print(f"\nAnalisando o caminho: {caminho}")
+    print("Informações combinadas:")
+    for chave, valor in informacoes.items():
+        print(f"{chave} => {valor}")

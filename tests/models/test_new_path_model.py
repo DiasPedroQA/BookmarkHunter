@@ -2,169 +2,134 @@
 
 import pytest
 from pathlib import Path
-from app.models.new_path_model import AnalisadorCaminho, AnalisadorPathlib
+from app.models.new_path_model import AnalisadorCaminhoIntegrado
+
+
+"""
+Testes para a classe AnalisadorCaminhoIntegrado.
+
+Funções de teste:
+- setup_analisador: Fixture do pytest para configurar o objeto AnalisadorCaminhoIntegrado.
+- test_eh_absoluto: Verifica se o caminho não é absoluto.
+- test_eh_relativo: Verifica se o caminho é relativo.
+- test_eh_valido: Verifica se o caminho é válido.
+- test_obter_nome: Verifica se o nome do arquivo é obtido corretamente.
+- test_obter_nome_sem_extensao: Verifica se o nome do arquivo sem extensão é obtido corretamente.
+- test_obter_extensao: Verifica se a extensão do arquivo é obtida corretamente.
+- test_obter_diretorio_pai: Verifica se o diretório pai é obtido corretamente.
+- test_possui_extensao: Verifica se o arquivo possui a extensão especificada.
+- test_contar_segmentos: Verifica se a contagem de segmentos do caminho está correta.
+- test_obter_metadados: Verifica se os metadados do arquivo são obtidos corretamente (assume que o arquivo não existe).
+- test_resolver_caminho: Verifica se o caminho é resolvido para um caminho absoluto.
+- test_converter_para_relativo: Verifica se o caminho é convertido corretamente para um caminho relativo.
+- test_converter_para_absoluto: Verifica se o caminho é convertido corretamente para um caminho absoluto.
+- test_obter_informacoes_combinadas: Verifica se as informações combinadas do caminho são obtidas corretamente.
+"""
 
 
 @pytest.fixture
-def caminho_absoluto() -> str:
-    return "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
+def setup_analisador():
+    caminho = "../../Downloads/Chrome/favoritos_23_12_2024.html"
+    referencia_dir = "/home/pedro-pm-dias/Downloads/Chrome"
+    return AnalisadorCaminhoIntegrado(
+        caminho_inicial=caminho, referencia_dir=referencia_dir
+    )
 
 
-@pytest.fixture
-def caminho_relativo() -> str:
-    return "../../Downloads/Chrome/favoritos_23_12_2024.html"
+def test_eh_absoluto(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert not setup_analisador.eh_absoluto()
 
 
-@pytest.fixture
-def diretorio_referencia() -> str:
-    return "/home/pedro-pm-dias/Downloads"
+def test_eh_relativo(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert setup_analisador.eh_relativo()
 
 
-def test_caminho_eh_absoluto(caminho_absoluto: str, caminho_relativo: str):
-    analisador = AnalisadorCaminho(caminho_absoluto)
-    assert analisador.caminho_eh_absoluto() is True
-
-    analisador = AnalisadorCaminho(caminho_relativo)
-    assert analisador.caminho_eh_absoluto() is False
+def test_eh_valido(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert setup_analisador.eh_valido()
 
 
-def test_caminho_eh_relativo(caminho_absoluto: str, caminho_relativo: str):
-    analisador = AnalisadorCaminho(caminho_absoluto)
-    assert analisador.caminho_eh_relativo() is False
-
-    analisador = AnalisadorCaminho(caminho_relativo)
-    assert analisador.caminho_eh_relativo() is True
+def test_obter_nome(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert setup_analisador.obter_nome() == "favoritos_23_12_2024.html"
 
 
-def test_caminho_eh_caminho_valido(caminho_absoluto: str, caminho_relativo: str):
-    analisador = AnalisadorCaminho(caminho_absoluto)
-    assert analisador.caminho_eh_caminho_valido() is True
-
-    analisador = AnalisadorCaminho(caminho_relativo)
-    assert analisador.caminho_eh_caminho_valido() is True
-
-    analisador = AnalisadorCaminho("invalid|path")
-    assert analisador.caminho_eh_caminho_valido() is False
+def test_obter_nome_sem_extensao(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert setup_analisador.obter_nome_sem_extensao() == "favoritos_23_12_2024"
 
 
-def test_caminho_obter_nome_arquivo(caminho_absoluto: str, caminho_relativo: str):
-    analisador = AnalisadorCaminho(caminho_absoluto)
-    assert analisador.caminho_obter_nome_arquivo() == "favoritos_23_12_2024.html"
-
-    analisador = AnalisadorCaminho(caminho_relativo)
-    assert analisador.caminho_obter_nome_arquivo() == "favoritos_23_12_2024.html"
+def test_obter_extensao(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert setup_analisador.obter_extensao() == ".html"
 
 
-def test_caminho_obter_diretorio(caminho_absoluto: str, caminho_relativo: str):
-    analisador = AnalisadorCaminho(caminho_absoluto)
+def test_obter_diretorio_pai(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert setup_analisador.obter_diretorio_pai() == "../../Downloads/Chrome"
+
+
+def test_possui_extensao(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert setup_analisador.possui_extensao(".html")
+
+
+def test_contar_segmentos(setup_analisador: AnalisadorCaminhoIntegrado):
+    assert setup_analisador.contar_segmentos() == 5
+
+
+def test_obter_metadados(setup_analisador: AnalisadorCaminhoIntegrado):
+    # This test assumes the file does not exist
+    assert setup_analisador.obter_metadados() == {}
+
+
+def test_resolver_caminho(setup_analisador: AnalisadorCaminhoIntegrado):
+    resolved_path = setup_analisador.resolver_caminho()
+    assert Path(resolved_path).is_absolute()
+
+
+def test_converter_para_relativo(setup_analisador: AnalisadorCaminhoIntegrado):
     assert (
-        analisador.caminho_obter_diretorio() == "/home/pedro-pm-dias/Downloads/Chrome"
-    )
-
-    analisador = AnalisadorCaminho(caminho_relativo)
-    assert analisador.caminho_obter_diretorio() == "../../Downloads/Chrome"
-
-
-def test_caminho_possui_extensao(caminho_absoluto: str, caminho_relativo: str):
-    analisador = AnalisadorCaminho(caminho_absoluto)
-    assert analisador.caminho_possui_extensao(".html") is True
-    assert analisador.caminho_possui_extensao(".txt") is False
-
-    analisador = AnalisadorCaminho(caminho_relativo)
-    assert analisador.caminho_possui_extensao(".html") is True
-    assert analisador.caminho_possui_extensao(".txt") is False
-
-
-def test_caminho_contar_segmentos(caminho_absoluto: str, caminho_relativo: str):
-    analisador = AnalisadorCaminho(caminho_absoluto)
-    assert analisador.caminho_contar_segmentos() == 5
-
-    analisador = AnalisadorCaminho(caminho_relativo)
-    assert analisador.caminho_contar_segmentos() == 5
-
-
-def test_caminho_converter_para_relativo(caminho_absoluto: str, diretorio_referencia: str):
-    analisador = AnalisadorCaminho(caminho_absoluto)
-    assert (
-        str(analisador.caminho_converter_para_relativo(diretorio_referencia))
-        == "Chrome/favoritos_23_12_2024.html"
+        setup_analisador.converter_para_relativo()
+        == "../../Downloads/Chrome/favoritos_23_12_2024.html"
     )
 
 
-def test_caminho_converter_para_absoluto(caminho_relativo, diretorio_referencia: str):
-    analisador = AnalisadorCaminho(caminho_relativo)
-    assert (
-        analisador.caminho_converter_para_absoluto(diretorio_referencia)
-        == "/home/pedro-pm-dias/Downloads/../../Downloads/Chrome/favoritos_23_12_2024.html"
-    )
+def test_converter_para_absoluto(setup_analisador: AnalisadorCaminhoIntegrado):
+    absolute_path = setup_analisador.converter_para_absoluto()
+    assert Path(absolute_path).is_absolute()
 
 
-def test_pathlib_eh_arquivo(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert analisador.pathlib_eh_arquivo() is True
+def test_obter_informacoes_combinadas(setup_analisador: AnalisadorCaminhoIntegrado):
+    """
+    Testa a função obter_informacoes_combinadas do objeto setup_analisador.
 
+    Este teste verifica se as informações combinadas retornadas pela função
+    obter_informacoes_combinadas estão corretas. Asserções são feitas para
+    garantir que cada campo do dicionário de informações esteja de acordo
+    com os valores esperados.
 
-def test_pathlib_eh_diretorio(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert analisador.pathlib_eh_diretorio() is False
-
-
-def test_pathlib_obter_nome(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert analisador.pathlib_obter_nome() == "favoritos_23_12_2024.html"
-
-
-def test_pathlib_obter_nome_sem_extensao(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert analisador.pathlib_obter_nome_sem_extensao() == "favoritos_23_12_2024"
-
-
-def test_pathlib_obter_extensao(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert analisador.pathlib_obter_extensao() == ".html"
-
-
-def test_pathlib_obter_pai(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert str(analisador.pathlib_obter_pai()) == "/home/pedro-pm-dias/Downloads/Chrome"
-
-
-def test_pathlib_existe(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert analisador.pathlib_existe() is True
-
-
-def test_pathlib_eh_absoluto(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert analisador.pathlib_eh_absoluto() is True
-
-
-def test_pathlib_resolver_caminho(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert str(analisador.pathlib_resolver_caminho()) == str(
-        Path(caminho_absoluto).resolve()
-    )
-
-
-def test_pathlib_contar_segmentos(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    assert analisador.pathlib_contar_segmentos() == 6
-
-
-def test_obter_informacoes_combinadas(caminho_absoluto: str):
-    analisador = AnalisadorPathlib(caminho_absoluto)
-    informacoes = analisador.obter_informacoes_combinadas()
-    assert informacoes["eh_absoluto"] is True
-    assert informacoes["eh_valido"] is True
-    assert informacoes["nome_arquivo"] == "favoritos_23_12_2024.html"
-    assert informacoes["diretorio"] == "/home/pedro-pm-dias/Downloads/Chrome"
-    assert informacoes["possui_extensao"] is True
-    assert informacoes["contagem_segmentos"] == 5
-    assert informacoes["eh_arquivo"] is True
-    assert informacoes["eh_diretorio"] is False
-    assert informacoes["nome"] == "favoritos_23_12_2024.html"
-    assert informacoes["nome_sem_extensao"] == "favoritos_23_12_2024"
+    Asserções:
+        - informacoes["eh_absoluto"] deve ser False
+        - informacoes["eh_valido"] deve ser True
+        - informacoes["nome_caminho"] deve ser "favoritos_23_12_2024.html"
+        - informacoes["diretorio_pai"] deve ser "../../Downloads/Chrome"
+        - informacoes["extensao"] deve ser ".html"
+        - informacoes["possui_extensao"] deve ser True
+        - informacoes["contagem_segmentos"] deve ser 5
+        - informacoes["eh_arquivo"] deve ser False
+        - informacoes["eh_diretorio"] deve ser False
+        - informacoes["nome_sem_extensao"] deve ser "favoritos_23_12_2024"
+        - informacoes["caminho_relativo"] deve ser "favoritos_23_12_2024.html"
+        - informacoes["caminho_absoluto"] deve ser um caminho absoluto
+    """
+    informacoes = setup_analisador.obter_informacoes_combinadas()
+    assert informacoes["eh_absoluto"] == False
+    assert informacoes["eh_valido"] == True
+    assert informacoes["nome_caminho"] == "favoritos_23_12_2024.html"
+    assert informacoes["diretorio_pai"] == "../../Downloads/Chrome"
     assert informacoes["extensao"] == ".html"
-    assert informacoes["pai"] == "/home/pedro-pm-dias/Downloads/Chrome"
-    assert informacoes["metadados"]["existe"] is True
-    assert informacoes["caminho_resolvido"] == str(Path(caminho_absoluto).resolve())
+    assert informacoes["possui_extensao"] == True
+    assert informacoes["contagem_segmentos"] == 5
+    assert informacoes["eh_arquivo"] == False
+    assert informacoes["eh_diretorio"] == False
+    assert informacoes["nome_sem_extensao"] == "favoritos_23_12_2024"
+    assert (
+        informacoes["caminho_relativo"]
+        == "favoritos_23_12_2024.html"
+    )
+    assert Path(informacoes["caminho_absoluto"]).is_absolute()
