@@ -1,127 +1,170 @@
 # pylint: disable=C, R, E, W
 
-# Suíte de testes
-
-import unittest
-from app.models.new_path_model import PathAnalyzer
-
-
-class TestPathAnalyzer(unittest.TestCase):
-    """
-    Testes unitários para a classe PathAnalyzer.
-    """
-
-    def test_is_absolute(self):
-        """
-        Testa se o método is_absolute() identifica corretamente caminhos absolutos.
-        """
-        self.assertTrue(
-            PathAnalyzer(
-                "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
-            ).is_absolute()
-        )
-        self.assertFalse(
-            PathAnalyzer(
-                "pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
-            ).is_absolute()
-        )
-        self.assertTrue(PathAnalyzer("//servidor/compartilhamento").is_absolute())
-        self.assertFalse(PathAnalyzer("").is_absolute())
-
-    def test_is_valid_path(self):
-        """
-        Testa se o método is_valid_path() valida corretamente os caminhos.
-        """
-        self.assertTrue(
-            PathAnalyzer(
-                "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
-            ).is_valid_path()
-        )
-        self.assertTrue(
-            PathAnalyzer(
-                "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
-            ).is_valid_path()
-        )
-        self.assertTrue(
-            PathAnalyzer("/caminho/valido/sem/chars_especiais").is_valid_path()
-        )
-        self.assertFalse(PathAnalyzer("invalid<>chars").is_valid_path())
-
-    def test_get_basename(self):
-        """
-        Testa se o método get_basename() retorna o nome do arquivo ou pasta corretamente.
-        """
-        self.assertEqual(
-            PathAnalyzer(
-                "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
-            ).get_basename(),
-            "favoritos_23_12_2024.html",
-        )
-        self.assertEqual(
-            PathAnalyzer("/home/pedro-pm-dias/Downloads/").get_basename(), "Downloads"
-        )
-        self.assertEqual(
-            PathAnalyzer("caminho_relativo.html").get_basename(),
-            "caminho_relativo.html",
-        )
-        self.assertEqual(PathAnalyzer("/").get_basename(), "")
-
-    def test_get_directory(self):
-        """
-        Testa se o método get_directory() retorna o diretório pai corretamente.
-        """
-        self.assertEqual(
-            PathAnalyzer(
-                "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
-            ).get_directory(),
-            "/home/pedro-pm-dias/Downloads/Chrome",
-        )
-        self.assertEqual(
-            PathAnalyzer("/caminho/sem_arquivo/").get_directory(), "/caminho"
-        )
-        self.assertEqual(
-            PathAnalyzer("Chrome/favoritos_23_12_2024.html").get_directory(), "Chrome"
-        )
-        self.assertEqual(PathAnalyzer("/").get_directory(), "")
-
-    def test_has_extension(self):
-        """
-        Testa se o método has_extension() identifica corretamente extensões de arquivos.
-        """
-        self.assertTrue(
-            PathAnalyzer(
-                "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
-            ).has_extension(".html")
-        )
-        self.assertFalse(
-            PathAnalyzer("/home/pedro-pm-dias/Downloads/exemplo.pdf").has_extension(
-                ".html"
-            )
-        )
-        self.assertTrue(
-            PathAnalyzer("favoritos_23_12_2024.HTML").has_extension(".HTML")
-        )
-        self.assertFalse(PathAnalyzer("favoritos_23_12_2024").has_extension(".html"))
-
-    def test_count_segments(self):
-        """
-        Testa se o método count_segments() conta corretamente os segmentos do caminho.
-        """
-        self.assertEqual(
-            PathAnalyzer(
-                "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
-            ).count_segments(),
-            5,
-        )
-        self.assertEqual(PathAnalyzer("/").count_segments(), 0)
-        self.assertEqual(
-            PathAnalyzer(
-                "../Downloads/Chrome/favoritos_23_12_2024.html"
-            ).count_segments(),
-            4,
-        )
-        self.assertEqual(PathAnalyzer("/redundante//slashes///").count_segments(), 2)
+import pytest
+from pathlib import Path
+from app.models.new_path_model import AnalisadorCaminho, AnalisadorPathlib
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.fixture
+def caminho_absoluto() -> str:
+    return "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
+
+
+@pytest.fixture
+def caminho_relativo() -> str:
+    return "../../Downloads/Chrome/favoritos_23_12_2024.html"
+
+
+@pytest.fixture
+def diretorio_referencia() -> str:
+    return "/home/pedro-pm-dias/Downloads"
+
+
+def test_caminho_eh_absoluto(caminho_absoluto: str, caminho_relativo: str):
+    analisador = AnalisadorCaminho(caminho_absoluto)
+    assert analisador.caminho_eh_absoluto() is True
+
+    analisador = AnalisadorCaminho(caminho_relativo)
+    assert analisador.caminho_eh_absoluto() is False
+
+
+def test_caminho_eh_relativo(caminho_absoluto: str, caminho_relativo: str):
+    analisador = AnalisadorCaminho(caminho_absoluto)
+    assert analisador.caminho_eh_relativo() is False
+
+    analisador = AnalisadorCaminho(caminho_relativo)
+    assert analisador.caminho_eh_relativo() is True
+
+
+def test_caminho_eh_caminho_valido(caminho_absoluto: str, caminho_relativo: str):
+    analisador = AnalisadorCaminho(caminho_absoluto)
+    assert analisador.caminho_eh_caminho_valido() is True
+
+    analisador = AnalisadorCaminho(caminho_relativo)
+    assert analisador.caminho_eh_caminho_valido() is True
+
+    analisador = AnalisadorCaminho("invalid|path")
+    assert analisador.caminho_eh_caminho_valido() is False
+
+
+def test_caminho_obter_nome_arquivo(caminho_absoluto: str, caminho_relativo: str):
+    analisador = AnalisadorCaminho(caminho_absoluto)
+    assert analisador.caminho_obter_nome_arquivo() == "favoritos_23_12_2024.html"
+
+    analisador = AnalisadorCaminho(caminho_relativo)
+    assert analisador.caminho_obter_nome_arquivo() == "favoritos_23_12_2024.html"
+
+
+def test_caminho_obter_diretorio(caminho_absoluto: str, caminho_relativo: str):
+    analisador = AnalisadorCaminho(caminho_absoluto)
+    assert (
+        analisador.caminho_obter_diretorio() == "/home/pedro-pm-dias/Downloads/Chrome"
+    )
+
+    analisador = AnalisadorCaminho(caminho_relativo)
+    assert analisador.caminho_obter_diretorio() == "../../Downloads/Chrome"
+
+
+def test_caminho_possui_extensao(caminho_absoluto: str, caminho_relativo: str):
+    analisador = AnalisadorCaminho(caminho_absoluto)
+    assert analisador.caminho_possui_extensao(".html") is True
+    assert analisador.caminho_possui_extensao(".txt") is False
+
+    analisador = AnalisadorCaminho(caminho_relativo)
+    assert analisador.caminho_possui_extensao(".html") is True
+    assert analisador.caminho_possui_extensao(".txt") is False
+
+
+def test_caminho_contar_segmentos(caminho_absoluto: str, caminho_relativo: str):
+    analisador = AnalisadorCaminho(caminho_absoluto)
+    assert analisador.caminho_contar_segmentos() == 5
+
+    analisador = AnalisadorCaminho(caminho_relativo)
+    assert analisador.caminho_contar_segmentos() == 5
+
+
+def test_caminho_converter_para_relativo(caminho_absoluto: str, diretorio_referencia: str):
+    analisador = AnalisadorCaminho(caminho_absoluto)
+    assert (
+        str(analisador.caminho_converter_para_relativo(diretorio_referencia))
+        == "Chrome/favoritos_23_12_2024.html"
+    )
+
+
+def test_caminho_converter_para_absoluto(caminho_relativo, diretorio_referencia: str):
+    analisador = AnalisadorCaminho(caminho_relativo)
+    assert (
+        analisador.caminho_converter_para_absoluto(diretorio_referencia)
+        == "/home/pedro-pm-dias/Downloads/../../Downloads/Chrome/favoritos_23_12_2024.html"
+    )
+
+
+def test_pathlib_eh_arquivo(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert analisador.pathlib_eh_arquivo() is True
+
+
+def test_pathlib_eh_diretorio(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert analisador.pathlib_eh_diretorio() is False
+
+
+def test_pathlib_obter_nome(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert analisador.pathlib_obter_nome() == "favoritos_23_12_2024.html"
+
+
+def test_pathlib_obter_nome_sem_extensao(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert analisador.pathlib_obter_nome_sem_extensao() == "favoritos_23_12_2024"
+
+
+def test_pathlib_obter_extensao(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert analisador.pathlib_obter_extensao() == ".html"
+
+
+def test_pathlib_obter_pai(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert str(analisador.pathlib_obter_pai()) == "/home/pedro-pm-dias/Downloads/Chrome"
+
+
+def test_pathlib_existe(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert analisador.pathlib_existe() is True
+
+
+def test_pathlib_eh_absoluto(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert analisador.pathlib_eh_absoluto() is True
+
+
+def test_pathlib_resolver_caminho(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert str(analisador.pathlib_resolver_caminho()) == str(
+        Path(caminho_absoluto).resolve()
+    )
+
+
+def test_pathlib_contar_segmentos(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    assert analisador.pathlib_contar_segmentos() == 6
+
+
+def test_obter_informacoes_combinadas(caminho_absoluto: str):
+    analisador = AnalisadorPathlib(caminho_absoluto)
+    informacoes = analisador.obter_informacoes_combinadas()
+    assert informacoes["eh_absoluto"] is True
+    assert informacoes["eh_valido"] is True
+    assert informacoes["nome_arquivo"] == "favoritos_23_12_2024.html"
+    assert informacoes["diretorio"] == "/home/pedro-pm-dias/Downloads/Chrome"
+    assert informacoes["possui_extensao"] is True
+    assert informacoes["contagem_segmentos"] == 5
+    assert informacoes["eh_arquivo"] is True
+    assert informacoes["eh_diretorio"] is False
+    assert informacoes["nome"] == "favoritos_23_12_2024.html"
+    assert informacoes["nome_sem_extensao"] == "favoritos_23_12_2024"
+    assert informacoes["extensao"] == ".html"
+    assert informacoes["pai"] == "/home/pedro-pm-dias/Downloads/Chrome"
+    assert informacoes["metadados"]["existe"] is True
+    assert informacoes["caminho_resolvido"] == str(Path(caminho_absoluto).resolve())
