@@ -130,6 +130,6 @@ def test_obter_informacoes_combinadas(setup_analisador: AnalisadorCaminhoIntegra
     assert informacoes["nome_sem_extensao"] == "favoritos_23_12_2024"
     assert (
         informacoes["caminho_relativo"]
-        == "favoritos_23_12_2024.html"
+        == "../../Downloads/Chrome/favoritos_23_12_2024.html"
     )
     assert Path(informacoes["caminho_absoluto"]).is_absolute()
