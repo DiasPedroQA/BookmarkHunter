@@ -73,20 +73,20 @@
 # .group()	Retorna o grupo ao qual o arquivo pertence.
 
 
-# Exemplo de uso
-if __name__ == "__main__":
-    caminhos_para_validar: list[str] = [
-        "/caminho/inexistente/",
-        "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
-        "/home/pedro-pm-dias/Downloads/Chrome/favoritos.html",
-        "/home/pedro-pm-dias/Downloads/Chrome/",
-        "/home/pedro-pm-dias/Downloads/Chrome/Teste/",
-        "../../Downloads/Chrome/favoritos.html",
-        "../../Downloads/Chrome/favoritos_23_12_2024.html",
-        "../../Downloads/Chrome/",
-        "../../Downloads/Chrome/Teste/",
-        "/home/pedro-pm-dias/Downloads/Chrome/favoritos_link_simbólico",  # Exemplo de link simbólico
-    ]
+# # Exemplo de uso
+# if __name__ == "__main__":
+#     caminhos_para_validar: list[str] = [
+#         "/caminho/inexistente/",
+#         "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
+#         "/home/pedro-pm-dias/Downloads/Chrome/favoritos.html",
+#         "/home/pedro-pm-dias/Downloads/Chrome/",
+#         "/home/pedro-pm-dias/Downloads/Chrome/Teste/",
+#         "../../Downloads/Chrome/favoritos.html",
+#         "../../Downloads/Chrome/favoritos_23_12_2024.html",
+#         "../../Downloads/Chrome/",
+#         "../../Downloads/Chrome/Teste/",
+#         "/home/pedro-pm-dias/Downloads/Chrome/favoritos_link_simbólico",  # Exemplo de link simbólico
+#     ]
 
     # for caminho in caminhos_para_validar:
     #     file_obj = FileModel(caminho)

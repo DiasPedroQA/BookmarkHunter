@@ -2,21 +2,21 @@
 # Este módulo contém funções auxiliares para manipulação de caminhos e datas.
 
 # Funções:
-#     - obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]: 
+#     - obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
 #         Obtém informações detalhadas sobre um caminho fornecido.
-#     - obter_tamanho_arquivo(tamanho_arquivo: int) -> str: 
+#     - obter_tamanho_arquivo(tamanho_arquivo: int) -> str:
 #         Retorna o tamanho de um arquivo em formato legível (KB, MB, etc.).
-#     - obter_data_criacao(timestamp_data_criacao: float) -> str: 
+#     - obter_data_criacao(timestamp_data_criacao: float) -> str:
 #         Retorna a data de criação de um arquivo no formato padrão.
-#     - obter_data_modificacao(timestamp_data_modificacao: float) -> str: 
+#     - obter_data_modificacao(timestamp_data_modificacao: float) -> str:
 #         Retorna a data de modificação de um arquivo no formato padrão.
-#     - obter_data_acesso(timestamp_data_acesso: float) -> str: 
+#     - obter_data_acesso(timestamp_data_acesso: float) -> str:
 #         Retorna a data de acesso de um arquivo no formato padrão.
-#     - obter_permissoes_caminho(caminho: str) -> dict[str, bool]: 
+#     - obter_permissoes_caminho(caminho: str) -> dict[str, bool]:
 #         Retorna as permissões do caminho fornecido (leitura, escrita e execução).
-#     - obter_id_unico(identificador: int) -> str: 
+#     - obter_id_unico(identificador: int) -> str:
 #         Gera um ID único a partir de um identificador numérico positivo.
-#     - sanitizar_caminho_relativo(caminho: str) -> str: 
+#     - sanitizar_caminho_relativo(caminho: str) -> str:
 #         Remove caracteres especiais e normaliza caminhos relativos.
 # """
 

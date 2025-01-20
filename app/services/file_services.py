@@ -2,7 +2,7 @@
 # Este módulo contém funções auxiliares para manipulação de arquivos.
 
 # Funções:
-#     - obter_tamanho_arquivo(tamanho_arquivo: int) -> str: 
+#     - obter_tamanho_arquivo(tamanho_arquivo: int) -> str:
 #         Retorna o tamanho de um arquivo em formato legível (KB, MB, etc.).
 # """
 

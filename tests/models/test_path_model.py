@@ -34,14 +34,13 @@ incluindo caminhos absolutos e relativos, válidos e inválidos, arquivos e dire
 #     assert CaminhoUtils.validar_caminho_como_string(False) == False
 
 
-
 # # Testando o método converter_para_absoluto
 # def test_converter_para_absoluto():
 #     # Caminhos válidos (você pode alterar o valor para o seu diretório)
-#     caminho_relativo = "./"
-#     caminho_absoluto = CaminhoUtils.converter_para_absoluto(caminho_relativo)
+#     eh_relativo = "./"
+#     caminho_absoluto = CaminhoUtils.converter_para_absoluto(eh_relativo)
 #     assert caminho_absoluto == str(
-#         (Path.home() / Path(caminho_relativo.lstrip("./"))).resolve()
+#         (Path.home() / Path(eh_relativo.lstrip("./"))).resolve()
 #     )
 
 #     # Caminhos inválidos
