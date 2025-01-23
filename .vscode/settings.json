@@ -10,7 +10,9 @@
     "asttokens",
     "basico",
     "beautifulsoup",
+    "binario",
     "booleaness",
+    "booleano",
     "Booleano",
     "celerybeat",
     "certifi",
@@ -92,6 +94,7 @@
     "PYTHONPATH",
     "pytype",
     "pyzmq",
+    "relatorio",
     "relatrio",
     "rgxs",
     "ropeproject",
@@ -106,6 +109,7 @@
     "Spyder",
     "spyderproject",
     "spyproject",
+    "subcaminhos",
     "subdiretorio",
     "subdiretorios",
     "sublicensable",
@@ -136,5 +140,6 @@
   },
   "python.testing.pytestEnabled": true,
   "python.testing.pytestArgs": ["tests"],
-  "github-actions.workflows.pinned.workflows": []
+  "github-actions.workflows.pinned.workflows": [],
+  "python.REPL.enableREPLSmartSend": false
 }
