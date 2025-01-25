@@ -122,6 +122,7 @@
     "simbolica",
     "simbolico",
     "soupsieve",
+    "sourcery",
     "Spyder",
     "spyderproject",
     "spyproject",
@@ -159,5 +160,6 @@
   "python.testing.pytestArgs": ["tests"],
   "github-actions.workflows.pinned.workflows": [],
   "python.REPL.enableREPLSmartSend": false,
-  "wolf.disableHotModeWarning": true
+  "wolf.disableHotModeWarning": true,
+  "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }
