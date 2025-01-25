@@ -1,86 +1,52 @@
 # pylint: disable=C, R, E, W
 
-from dataclasses import dataclass, field
 import json
 import re
 from typing import Optional, Dict, Union
+from app.services.path_services import (
+    sanitizar_caminho,
+    validar_tamanho_nome_caminho,
+    verificar_caminho_absoluto,
+    verificar_caminho_relativo,
+    contar_diretorios,
+    extrair_nome_item,
+    extrair_pasta_principal,
+    extrair_pasta_mae,
+    verificar_arquivo,
+)
 
 
-# Definição centralizada de expressões regulares
-REGEX_CAMINHO_ABSOLUTO = r"^(?:[a-zA-Z]:\\|/home/[a-zA-Z0-9_-]+/)"
-REGEX_CAMINHO_RELATIVO = r"^(?:\.{1,2}/)"
-REGEX_NOME_ITEM = r"\.[a-zA-Z0-9]+$"
-REGEX_SANITIZAR_CAMINHO = r"[^a-zA-Z0-9\- _./\\:]"
-REGEX_EXTRAIR_PASTA = r"([^/\\]+)/[^/\\]+/?$"
-
-
-@dataclass(init=True, repr=True, eq=True)
 class SanitizePath:
+    def __init__(self, caminho_bruto: str):
 
-    caminho_original: str
-    caminho_sanitizado: str = field(init=False)
-    formato_valido: bool = field(init=False)
-    eh_absoluto: bool = field(init=False)
-    eh_relativo: bool = field(init=False)
-    numero_diretorios: int = field(init=False)
-    nome_item: Optional[str] = field(init=False)
-    pasta_principal: Optional[str] = field(init=False)
-    pasta_mae: Optional[str] = field(init=False)
-    eh_arquivo: bool = field(init=False)
-    eh_pasta: bool = field(init=False)
+        # Dados do objeto que serão criados
+        self.caminho_original: str = caminho_bruto
+        self.caminho_sanitizado: str
+        self.formato_valido: bool
+        self.eh_absoluto: bool
+        self.eh_relativo: bool
+        self.numero_diretorios: int
+        self.nome_item: Optional[str]
+        self.pasta_principal: Optional[str]
+        self.pasta_mae: Optional[str]
+        self.eh_arquivo: bool
+        self.eh_pasta: bool
+        
+        # Inicializa os atributos do objeto após a criação.
+        self._processar_caminho()
 
-    def __post_init__(self):
-        """Inicializa os atributos do objeto após a criação."""
-        self._inicializar_caminho()
-        self._inicializar_informacoes()
-
-    def _inicializar_caminho(self):
-        """Sanitiza e valida o caminho original."""
-        self.caminho_sanitizado = self._sanitizar_caminho(self.caminho_original)
-        self.formato_valido = self._validar_tamanho_nome_caminho(
-            self.caminho_sanitizado
-        )
-
-    def _inicializar_informacoes(self):
-        """Extrai informações detalhadas do caminho sanitizado."""
-        self.eh_absoluto = bool(
-            re.match(REGEX_CAMINHO_ABSOLUTO, self.caminho_sanitizado)
-        )
-        self.eh_relativo = bool(
-            re.match(REGEX_CAMINHO_RELATIVO, self.caminho_sanitizado)
-        )
-        self.numero_diretorios = self.caminho_sanitizado.count("/") - 1
-        self.nome_item = self._extrair_nome_item(self.caminho_sanitizado)
-        self.pasta_principal = self._extrair_pasta_principal(self.caminho_sanitizado)
-        self.pasta_mae = self._extrair_pasta_mae(self.caminho_sanitizado)
-        self.eh_arquivo = bool(re.search(REGEX_NOME_ITEM, self.caminho_sanitizado))
+    def _processar_caminho(self):
+        """Processa e extrai informações do caminho."""
+        self.caminho_sanitizado = sanitizar_caminho(self.caminho_original)
+        self.formato_valido = validar_tamanho_nome_caminho(self.caminho_sanitizado)
+        self.eh_absoluto = verificar_caminho_absoluto(self.caminho_sanitizado)
+        self.eh_relativo = verificar_caminho_relativo(self.caminho_sanitizado)
+        self.numero_diretorios = contar_diretorios(self.caminho_sanitizado)
+        self.nome_item = extrair_nome_item(self.caminho_sanitizado)
+        self.pasta_principal = extrair_pasta_principal(self.caminho_sanitizado)
+        self.pasta_mae = extrair_pasta_mae(self.caminho_sanitizado)
+        self.eh_arquivo = verificar_arquivo(self.caminho_sanitizado)
         self.eh_pasta = not self.eh_arquivo
-
-    def _sanitizar_caminho(self, caminho: str) -> str:
-        """Remove caracteres inválidos do caminho."""
-        return re.sub(REGEX_SANITIZAR_CAMINHO, "", caminho).rstrip("/\\")
-
-    def _validar_tamanho_nome_caminho(self, caminho: str) -> bool:
-        """Valida o tamanho máximo permitido para o caminho."""
-        if len(caminho) > 260:
-            raise ValueError(
-                f"O caminho '{caminho}' excede o limite de 260 caracteres."
-            )
-        return True
-
-    def _extrair_nome_item(self, caminho: str) -> Optional[str]:
-        """Extrai o nome do item (arquivo ou pasta) do caminho."""
-        return caminho.split("/")[-1] if "/" in caminho else None
-
-    def _extrair_pasta_principal(self, caminho: str) -> Optional[str]:
-        """Extrai a pasta principal do caminho."""
-        match = re.search(REGEX_EXTRAIR_PASTA, caminho)
-        return match.group(1) if match else None
-
-    def _extrair_pasta_mae(self, caminho: str) -> Optional[str]:
-        """Extrai a pasta mãe do caminho."""
-        partes = caminho.rstrip("/\\").split("/")
-        return partes[-3] if len(partes) > 2 else None
 
     def para_dict(self) -> Dict[str, Union[bool, int, None, str]]:
         """Converte os atributos do objeto para um dicionário."""

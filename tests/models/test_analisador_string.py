@@ -120,3 +120,23 @@ def test_caminho(caminho: str, esperado: dict) -> None:
 
     for chave, valor_esperado in esperado.items():
         assert json_caminho.get(chave) == valor_esperado
+
+def test_caminho_excede_tamanho():
+    caminho = "a" * 261
+    with pytest.raises(ValueError, match="excede o limite de 260 caracteres"):
+        SanitizePath(caminho_original=caminho)
+
+@pytest.mark.parametrize("caminho", ["", "   ", "<>?|*", None])
+def test_caminho_invalido(caminho):
+    with pytest.raises(ValueError, match="caminho inválido"):
+        SanitizePath(caminho_original=caminho)
+
+@pytest.mark.parametrize("caminho, esperado", [
+    ("/", {"eh_absoluto": True, "numero_diretorios": 0}),
+    ("../", {"eh_relativo": True, "numero_diretorios": 0}),
+    ("/home/user/", {"pasta_principal": "user", "pasta_mae": "home"}),
+])
+def test_caminho_borda(caminho: str, esperado: dict[str, bool | int] | dict[str, str]):
+    modelo = SanitizePath(caminho_original=caminho)
+    for chave, valor in esperado.items():
+        assert getattr(modelo, chave) == valor

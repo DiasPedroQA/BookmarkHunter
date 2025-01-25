@@ -1,199 +1,270 @@
-# """
-# Este módulo contém funções auxiliares para manipulação de caminhos e datas.
+# pylint: disable=C, R, E, W
 
-# Funções:
-#     - obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
-#         Obtém informações detalhadas sobre um caminho fornecido.
-#     - obter_tamanho_arquivo(tamanho_arquivo: int) -> str:
-#         Retorna o tamanho de um arquivo em formato legível (KB, MB, etc.).
-#     - obter_data_criacao(timestamp_data_criacao: float) -> str:
-#         Retorna a data de criação de um arquivo no formato padrão.
-#     - obter_data_modificacao(timestamp_data_modificacao: float) -> str:
-#         Retorna a data de modificação de um arquivo no formato padrão.
-#     - obter_data_acesso(timestamp_data_acesso: float) -> str:
-#         Retorna a data de acesso de um arquivo no formato padrão.
-#     - obter_permissoes_caminho(caminho: str) -> dict[str, bool]:
-#         Retorna as permissões do caminho fornecido (leitura, escrita e execução).
-#     - obter_id_unico(identificador: int) -> str:
-#         Gera um ID único a partir de um identificador numérico positivo.
-#     - sanitizar_caminho_relativo(caminho: str) -> str:
-#         Remove caracteres especiais e normaliza caminhos relativos.
-# """
+"""
+Módulo auxiliar para manipulação de caminhos e datas.
 
-# from datetime import datetime
-# import os
-# import uuid
+Funções disponíveis:
+1. Manipulação de datas:
+    - obter_data_criacao
+    - obter_data_modificacao
+    - obter_data_acesso
+2. Manipulação de permissões e identificadores:
+    - obter_permissoes_caminho
+    - obter_id_unico
+3. Manipulação de caminhos:
+    - sanitizar_caminho
+    - validar_tamanho_nome_caminho
+    - verificar_caminho_absoluto
+    - verificar_caminho_relativo
+    - contar_diretorios
+    - extrair_nome_item
+    - extrair_pasta_principal
+    - extrair_pasta_mae
+    - verificar_arquivo
+    - sanitizar_prefixo_caminho
+"""
+
+import re
+from typing import Dict
+
+# Constantes de expressões regulares
+REGEX_UTEIS: Dict[str, str] = {
+    "CAMINHO_ABSOLUTO": r"^(?:[a-zA-Z]:\\|/home/[a-zA-Z0-9_-]+/)",
+    "CAMINHO_RELATIVO": r"^(?:\.{1,2}/)",
+    "NOME_ITEM": r"\.[a-zA-Z0-9]+$",
+    "SANITIZAR_CAMINHO": r"[^a-zA-Z0-9\- _./\\:]",
+    "EXTRAIR_PASTA": r"([^/\\]+)/[^/\\]+/?$",
+    "VALIDACAO_CAMINHO": r"[\\/]+",
+}
 
 
+# Função genérica para validação de caminho
+def validar_caminho(caminho: str) -> str:
+    """
+    Valida e normaliza um caminho fornecido.
+
+    - Verifica se o caminho é uma string não vazia.
+    - Remove múltiplos separadores consecutivos.
+    - Retorna o caminho normalizado.
+    """
+    separador: str = "/"
+    if not isinstance(caminho, str) or not caminho.strip():
+        raise ValueError("O caminho deve ser uma string não vazia.")
+    return re.sub(REGEX_UTEIS.get("VALIDACAO_CAMINHO"), separador, caminho.strip()).rstrip(separador)
+
+
+# # Funções para manipulação de caminhos
+# def sanitizar_caminho(caminho: str) -> str:
+#     """
+#     Remove caracteres inválidos do caminho e normaliza-o.
+#     """
+#     caminho = validar_caminho(caminho)
+#     return re.sub(REGEX_UTEIS["SANITIZAR_CAMINHO"], "", caminho)
+
+# def verificar_caminho_absoluto(caminho: str) -> bool:
+#     """
+#     Verifica se o caminho fornecido é absoluto.
+#     """
+#     caminho = validar_caminho(caminho)
+#     return bool(re.match(REGEX_UTEIS["CAMINHO_ABSOLUTO"], caminho))
+
+# def verificar_caminho_relativo(caminho: str) -> bool:
+#     """
+#     Verifica se o caminho fornecido é relativo.
+#     """
+#     caminho = validar_caminho(caminho)
+#     return not verificar_caminho_absoluto(caminho) and \
+#            bool(re.match(REGEX_UTEIS["CAMINHO_RELATIVO"], caminho))
+
+# def extrair_pasta_principal(caminho: str) -> Optional[str]:
+#     """
+#     Extrai a pasta principal do caminho fornecido.
+#     """
+#     caminho = validar_caminho(caminho)
+#     match = re.search(REGEX_UTEIS["EXTRAIR_PASTA"], caminho)
+#     return match.group(1) if match else None
+
+# def verificar_arquivo(caminho: str) -> bool:
+#     """
+#     Verifica se o caminho representa um arquivo.
+#     """
+#     caminho = validar_caminho(caminho)
+#     return bool(re.search(REGEX_UTEIS["NOME_ITEM"], caminho))
+
+
+# # Funções para manipulação de datas
 # def _formatar_data(timestamp: float) -> str:
 #     """
-#     Converte um timestamp em uma data legível no formato "dd/mm/yyyy hh:mm:ss".
-
-#     Args:
-#         timestamp (float): O timestamp que será formatado.
-
-#     Returns:
-#         str: A data formatada no padrão "dd/mm/yyyy hh:mm:ss", ou uma mensagem de erro.
+#     Converte um timestamp em uma data legível no formato 'dd/mm/yyyy hh:mm:ss'.
 #     """
 #     try:
 #         return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
-#     except TypeError as erro_tipo:
-#         return f"Erro de tipo: {erro_tipo}"
-#     except ValueError as erro_value:
-#         return f"Erro de valor -> {erro_value}"
+#     except (OSError, ValueError) as erro:
+#         return f"Erro ao formatar data: {erro}"
 
 
-# def fatiar_caminho(caminho_inteiro: str, separador: str = "/") -> list[str]:
-#     """
-#     Divide um caminho em partes utilizando um separador e remove itens irrelevantes.
-
-#     Args:
-#         caminho_inteiro (str): O caminho completo que será dividido.
-#         separador (str, opcional): O caractere separador usado para dividir o caminho.
-#             Padrão é "/".
-
-#     Returns:
-#         list[str]: Lista contendo as partes válidas do caminho, sem itens vazios ou irrelevantes.
-
-#     Raises:
-#         ValueError: Se o caminho não for uma string válida.
-#     """
-#     try:
-#         fatias = caminho_inteiro.strip(separador).split(separador)
-#         return [fatia for fatia in fatias if fatia not in ("", "..")]
-#     except AttributeError as exc:
-#         raise ValueError("O caminho deve ser uma string válida.") from exc
+# def obter_data_criacao(timestamp: float) -> str:
+#     """Retorna a data de criação formatada a partir de um timestamp."""
+#     return _formatar_data(timestamp)
 
 
-# def obter_dados_caminho(caminho_resolvido: str) -> dict[str, str]:
-#     """
-#     Extrai informações detalhadas de um caminho, como o diretório pai, nome e extensão.
-
-#     Args:
-#         caminho_resolvido (str): O caminho completo do arquivo ou diretório.
-
-#     Returns:
-#         dict[str, str]: Um dicionário contendo:
-#             - "pasta_pai": Diretório pai do item.
-#             - "nome_arquivo": Nome do arquivo (se presente).
-#             - "extensao_arquivo": Extensão do arquivo (se presente).
-#             - "nome_pasta": Nome da pasta (se o caminho for um diretório).
-#     """
-#     fatias = fatiar_caminho(caminho_resolvido)
-#     dados = {
-#         "pasta_pai": "/".join(fatias[:-1]) if len(fatias) > 1 else "",
-#     }
-
-#     if fatias:
-#         item = fatias[-1]
-#         if "." in item and not item.endswith("."):
-#             nome_arquivo, extensao_arquivo = item.rsplit(".", 1)
-#             dados.update(
-#                 {"nome_arquivo": nome_arquivo, "extensao_arquivo": extensao_arquivo}
-#             )
-#         else:
-#             dados.update({"nome_pasta": item})
-
-#     return dados
+# def obter_data_modificacao(timestamp: float) -> str:
+#     """Retorna a data de modificação formatada a partir de um timestamp."""
+#     return _formatar_data(timestamp)
 
 
-# def obter_data_criacao(timestamp_data_criacao: float) -> str:
-#     """
-#     Retorna a data de criação do arquivo no formato "dd/mm/yyyy hh:mm:ss".
-
-#     Args:
-#         timestamp_data_criacao (float): O timestamp da data de criação.
-
-#     Returns:
-#         str: A data de criação formatada.
-#     """
-#     return _formatar_data(timestamp_data_criacao)
+# def obter_data_acesso(timestamp: float) -> str:
+# """Retorna a data de acesso formatada a partir de um timestamp."""
+# return _formatar_data(timestamp)
 
 
-# def obter_data_modificacao(timestamp_data_modificacao: float) -> str:
-#     """
-#     Retorna a data de modificação do arquivo no formato "dd/mm/yyyy hh:mm:ss".
-
-#     Args:
-#         timestamp_data_modificacao (float): O timestamp da data de modificação.
-
-#     Returns:
-#         str: A data de modificação formatada.
-#     """
-#     return _formatar_data(timestamp_data_modificacao)
-
-
-# def obter_data_acesso(timestamp_data_acesso: float) -> str:
-#     """
-#     Retorna a data de acesso do arquivo no formato "dd/mm/yyyy hh:mm:ss".
-
-#     Args:
-#         timestamp_data_acesso (float): O timestamp da data de acesso.
-
-#     Returns:
-#         str: A data de acesso formatada.
-#     """
-#     return _formatar_data(timestamp_data_acesso)
-
-
-# def obter_permissoes_caminho(caminho: str) -> dict[str, bool]:
-#     """
-#     Verifica e retorna as permissões do caminho fornecido.
-
-#     Args:
-#         caminho (str): O caminho do sistema de arquivos.
-
-#     Returns:
-#         dict[str, bool]: Dicionário com permissões:
-#             - "leitura": Verdadeiro se o caminho é legível.
-#             - "escrita": Verdadeiro se o caminho é gravável.
-#             - "execucao": Verdadeiro se o caminho é executável.
-
-#     Raises:
-#         FileNotFoundError, PermissionError, OSError: Em caso de falhas ao acessar o caminho.
-#     """
-#     try:
-#         return {
-#             "leitura": os.access(caminho, os.R_OK),
-#             "escrita": os.access(caminho, os.W_OK),
-#             "execucao": os.access(caminho, os.X_OK),
-#         }
-#     except (FileNotFoundError, PermissionError, OSError) as erro:
-#         raise erro
-
-
+# # Funções para manipulação de identificadores
 # def obter_id_unico(identificador: int) -> str:
-#     """
-#     Gera um ID único baseado em um identificador numérico positivo.
-
-#     Args:
-#         identificador (int): O identificador numérico.
-
-#     Returns:
-#         str: Um ID único gerado.
-
-#     Raises:
-#         ValueError: Se o identificador for menor ou igual a zero.
-#     """
+#     """Gera um UUID baseado em um identificador numérico positivo."""
 #     if identificador <= 0:
 #         raise ValueError("O identificador deve ser um número inteiro positivo.")
 #     return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(identificador)))
 
 
-# def sanitizar_caminho_relativo(caminho: str) -> str:
+# # Funções para manipulação de permissões e identificadores
+# def obter_permissoes_caminho(caminho: str) -> Dict[str, bool]:
 #     """
-#     Remove caracteres especiais de um caminho relativo e o normaliza.
-
-#     Args:
-#         caminho (str): O caminho relativo a ser sanitizado.
-
-#     Returns:
-#         str: O caminho relativo sanitizado.
+#     Verifica e retorna as permissões de leitura, escrita e execução para o caminho.
 #     """
-#     if str(caminho).startswith("/../"):
-#         caminho = caminho.replace("/../", "../")
+#     if not os.path.exists(caminho):
+#         raise FileNotFoundError(f"O caminho '{caminho}' não existe.")
+#     return {
+#         "leitura": os.access(caminho, os.R_OK),
+#         "escrita": os.access(caminho, os.W_OK),
+#         "execucao": os.access(caminho, os.X_OK),
+#     }
 
-#     while str(caminho).startswith("../"):
-#         caminho = caminho[3:]
 
+# def validar_tamanho_nome_caminho(caminho: str) -> bool:
+#     """Valida se o tamanho do caminho não excede o limite de 260 caracteres."""
+#     if len(caminho) > 260:
+#         raise ValueError(f"O caminho '{caminho}' excede o limite de 260 caracteres.")
+#     return True
+
+
+# def contar_diretorios(caminho: str) -> int:
+#     """Conta o número de diretórios no caminho fornecido."""
+#     separador: str = "/"
+#     return caminho.count(separador) - 1
+
+
+# def extrair_nome_item(caminho: str) -> Optional[str]:
+#     """Extrai o nome do item (arquivo ou pasta) do caminho fornecido."""
+#     return os.path.basename(caminho) if caminho else None
+
+
+# def extrair_pasta_mae(caminho: str) -> Optional[str]:
+#     """Extrai a pasta mãe do caminho fornecido."""
+#     diretorios = os.path.normpath(caminho).split(os.sep)
+#     return diretorios[-2] if len(diretorios) > 1 else None
+
+
+# def sanitizar_prefixo_caminho(caminho: str) -> str:
+#     """Remove prefixos inválidos e normaliza caminhos relativos."""
+#     caminho = caminho.lstrip("/\\.")
 #     return caminho
+
+
+# # Teste das funções
+# def main():
+#     # Valores para testar as funções de data
+#     valores_teste_data = [1737658061.00, "string inválida", -12345, None]
+
+#     print("\n=== Testando Funções de Data ===")
+#     for valor in valores_teste_data:
+#         print(f"\nTestando com valor: {valor}")
+#         try:
+#             print(f"Data de acesso: {obter_data_acesso(valor)}")
+#             print(f"Data de criação: {obter_data_criacao(valor)}")
+#             print(f"Data de modificação: {obter_data_modificacao(valor)}")
+#         except Exception as erro:
+#             print(f"Erro encontrado: {erro}")
+
+#     # Valores para testar a função de ID único
+#     valores_teste_id = [42, -1, "string", 0, None, 999, 123456]
+
+#     print("\n=== Testando Função de ID Único ===")
+#     for valor in valores_teste_id:
+#         print(f"\nTestando com identificador: {valor}")
+#         try:
+#             print(f"ID único gerado: {obter_id_unico(valor)}")
+#         except Exception as erro:
+#             print(f"Erro encontrado: {erro}")
+
+
+# def secondary():
+#     """Testa as funções de manipulação de caminhos com diferentes tipos de entradas."""
+#     tipos_de_caminhos: Dict[str, str] = {
+#         "Arquivo - Absoluto e válido": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
+#         "Arquivo - Relativo e válido": "../imagens/foto.jpg",
+#         "Arquivo - Absoluto e inválido": "/home/pedro-pm-dias/arquivo?*<>.html",
+#         "Arquivo - Relativo e inválido": "../imagens/arquivo?*<>.jpg",
+#         "Pasta - Absoluta e válida": "/home/pedro-pm-dias/Downloads/Chrome/",
+#         "Pasta - Relativa e válida": "./Downloads/Chrome/",
+#         "Pasta - Absoluta e inválida": "/home/pedro-pm-dias/Downloads/Chrome/<>/",
+#         "Pasta - Relativa e inválida": "./Downloads/Chrome/<>/",
+#     }
+
+#     print("\n=== Testando Funções de Manipulação de Caminhos ===")
+
+#     for tipo, caminho_teste in tipos_de_caminhos.items():
+#         print(f"\nTipo do caminho: {tipo}")
+#         print(f"Caminho original: {caminho_teste}")
+
+#         try:
+#             # Sanitização do caminho
+#             caminho_sanitizado = sanitizar_caminho(caminho_teste)
+#             print(f"Caminho sanitizado: {caminho_sanitizado}")
+
+#             # Validação do tamanho do caminho
+#             if validar_tamanho_nome_caminho(caminho_sanitizado):
+#                 print("Validação de tamanho: OK")
+
+#             # Verificação de caminho absoluto ou relativo
+#             if verificar_caminho_absoluto(caminho_sanitizado):
+#                 print("O caminho é absoluto.")
+#             elif verificar_caminho_relativo(caminho_sanitizado):
+#                 print("O caminho é relativo.")
+#             else:
+#                 print("O caminho não é reconhecido como absoluto ou relativo.")
+
+#             # Contar diretórios
+#             num_diretorios = contar_diretorios(caminho_sanitizado)
+#             print(f"Número de diretórios: {num_diretorios}")
+
+#             # Extração de informações do caminho
+#             nome_item = extrair_nome_item(caminho_sanitizado)
+#             print(f"Nome do item: {nome_item}")
+
+#             pasta_principal = extrair_pasta_principal(caminho_sanitizado)
+#             print(f"Pasta principal: {pasta_principal}")
+
+#             pasta_mae = extrair_pasta_mae(caminho_sanitizado)
+#             print(f"Pasta mãe: {pasta_mae}")
+
+#             # Verificar se é um arquivo
+#             if verificar_arquivo(caminho_sanitizado):
+#                 print("O caminho representa um arquivo.")
+#             else:
+#                 print("O caminho não representa um arquivo.")
+
+#             # Verificar permissões do caminho
+#             permissoes = obter_permissoes_caminho(caminho_sanitizado)
+#             print(f"Permissões do caminho: {permissoes}")
+
+#             # Sanitizar prefixo do caminho
+#             caminho_prefixo_sanitizado = sanitizar_prefixo_caminho(caminho_sanitizado)
+#             print(f"Caminho com prefixo sanitizado: {caminho_prefixo_sanitizado}")
+
+#         except Exception as erro:
+#             print(f"Erro ao processar o caminho '{caminho_teste}': {erro}")
+
+
+# if __name__ == "__main__":
+#     main()
+#     secondary()
