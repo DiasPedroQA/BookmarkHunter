@@ -25,7 +25,7 @@ Funções disponíveis:
 """
 
 import re
-from typing import Dict
+from typing import Dict, Optional
 
 # Constantes de expressões regulares
 REGEX_UTEIS: Dict[str, str] = {
@@ -39,57 +39,66 @@ REGEX_UTEIS: Dict[str, str] = {
 
 
 # Função genérica para validação de caminho
-def validar_caminho(caminho: str) -> str:
+def validar_caminho(caminho: str, separador: str = "/") -> str:
     """
     Valida e normaliza um caminho fornecido.
 
     - Verifica se o caminho é uma string não vazia.
-    - Remove múltiplos separadores consecutivos.
-    - Retorna o caminho normalizado.
+    - Remove múltiplos separadores consecutivos por um único separador.
+    - Retorna o caminho normalizado, sem separadores ao final.
+
+    :param caminho: Caminho a ser validado.
+    :param separador: Separador a ser usado para normalização (padrão: "/").
+    :return: Caminho normalizado.
+    :raises ValueError: Se o caminho for inválido (não string ou vazio).
+    :raises KeyError: Se a regex de validação não for encontrada.
     """
-    separador: str = "/"
     if not isinstance(caminho, str) or not caminho.strip():
         raise ValueError("O caminho deve ser uma string não vazia.")
-    return re.sub(REGEX_UTEIS.get("VALIDACAO_CAMINHO"), separador, caminho.strip()).rstrip(separador)
 
+    if regex := REGEX_UTEIS.get("VALIDACAO_CAMINHO"):
+        return re.sub(regex, separador, caminho.strip()).rstrip(separador)
+    else:
+        raise KeyError("Expressão regular para validação de caminho não encontrada.")
 
-# # Funções para manipulação de caminhos
-# def sanitizar_caminho(caminho: str) -> str:
-#     """
-#     Remove caracteres inválidos do caminho e normaliza-o.
-#     """
-#     caminho = validar_caminho(caminho)
-#     return re.sub(REGEX_UTEIS["SANITIZAR_CAMINHO"], "", caminho)
+# Funções para manipulação de caminhos
+def sanitizar_caminho(caminho: str) -> str:
+    """
+    Remove caracteres inválidos do caminho e normaliza-o.
+    """
+    caminho = validar_caminho(caminho)
+    return re.sub(REGEX_UTEIS["SANITIZAR_CAMINHO"], "", caminho)
 
-# def verificar_caminho_absoluto(caminho: str) -> bool:
-#     """
-#     Verifica se o caminho fornecido é absoluto.
-#     """
-#     caminho = validar_caminho(caminho)
-#     return bool(re.match(REGEX_UTEIS["CAMINHO_ABSOLUTO"], caminho))
+def verificar_caminho_absoluto(caminho: str) -> bool:
+    """
+    Verifica se o caminho fornecido é absoluto.
+    """
+    caminho = validar_caminho(caminho)
+    return bool(re.match(REGEX_UTEIS["CAMINHO_ABSOLUTO"], caminho))
 
-# def verificar_caminho_relativo(caminho: str) -> bool:
-#     """
-#     Verifica se o caminho fornecido é relativo.
-#     """
-#     caminho = validar_caminho(caminho)
-#     return not verificar_caminho_absoluto(caminho) and \
-#            bool(re.match(REGEX_UTEIS["CAMINHO_RELATIVO"], caminho))
+def verificar_caminho_relativo(caminho: str) -> bool:
+    """
+    Verifica se o caminho fornecido é relativo.
+    """
+    caminho = validar_caminho(caminho)
+    return not verificar_caminho_absoluto(caminho) and \
+           bool(re.match(REGEX_UTEIS["CAMINHO_RELATIVO"], caminho))
 
-# def extrair_pasta_principal(caminho: str) -> Optional[str]:
-#     """
-#     Extrai a pasta principal do caminho fornecido.
-#     """
-#     caminho = validar_caminho(caminho)
-#     match = re.search(REGEX_UTEIS["EXTRAIR_PASTA"], caminho)
-#     return match.group(1) if match else None
+def extrair_pasta_principal(caminho: str) -> Optional[str]:
+    """
+    Extrai a pasta principal do caminho fornecido.
+    """
+    caminho = validar_caminho(caminho)
+    match = re.search(REGEX_UTEIS["EXTRAIR_PASTA"], caminho)
+    return match[1] if match else None
 
-# def verificar_arquivo(caminho: str) -> bool:
-#     """
-#     Verifica se o caminho representa um arquivo.
-#     """
-#     caminho = validar_caminho(caminho)
-#     return bool(re.search(REGEX_UTEIS["NOME_ITEM"], caminho))
+def verificar_arquivo(caminho: str) -> bool:
+    """
+    Verifica se o caminho representa um arquivo.
+    """
+    caminho = validar_caminho(caminho)
+    return bool(re.search(REGEX_UTEIS["NOME_ITEM"], caminho))
+
 
 
 # # Funções para manipulação de datas
