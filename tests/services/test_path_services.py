@@ -1,6 +1,7 @@
 # pylint: disable=C, R, E, W
 
 
+from typing import Callable
 from _pytest.python_api import RaisesContext
 import pytest
 from app.services.path_services import (
@@ -115,11 +116,11 @@ def test_funcoes_excecoes(function, caminho: None | str, expected_exception: typ
 @pytest.mark.parametrize(
     "function, caminho, expected_exception",
     [
-        (sanitizar_caminho, "/home/user/test", KeyError),
-        (verificar_caminho_absoluto, "/home/user/test", KeyError),
-        (verificar_caminho_relativo, "/home/user/test", KeyError),
-        (extrair_pasta_principal, "/home/user/test", KeyError),
-        (verificar_arquivo, "/home/user/test", KeyError),
+        (sanitizar_caminho, "", KeyError),
+        (verificar_caminho_absoluto, "", KeyError),
+        (verificar_caminho_relativo, "", KeyError),
+        (extrair_pasta_principal, "", KeyError),
+        (verificar_arquivo, "", KeyError),
     ],
 )
 def test_excecoes_regex_keyerror(function, caminho: str, expected_exception: type):
