@@ -31,74 +31,88 @@ from typing import Dict, Optional
 REGEX_UTEIS: Dict[str, str] = {
     "CAMINHO_ABSOLUTO": r"^(?:[a-zA-Z]:\\|/home/[a-zA-Z0-9_-]+/)",
     "CAMINHO_RELATIVO": r"^(?:\.{1,2}/)",
-    "NOME_ITEM": r"\.[a-zA-Z0-9]+$",
-    "SANITIZAR_CAMINHO": r"[^a-zA-Z0-9\- _./\\:]",
-    "EXTRAIR_PASTA": r"([^/\\]+)/[^/\\]+/?$",
-    "VALIDACAO_CAMINHO": r"[\\/]+",
+    "NOME_ITEM": r"\.[a-zA-Z0-9]+$",  # Extensão de arquivos
+    "SANITIZAR_CAMINHO": r"[^a-zA-Z0-9\- _./\\:]",  # Caracteres inválidos
+    "EXTRAIR_PASTA": r"([^/\\]+)/[^/\\]+/?$",  # Pasta principal
+    "VALIDACAO_CAMINHO": r"[\\/]+",  # Validar e normalizar barras
 }
 
 
-# Função genérica para validação de caminho
 def validar_caminho(caminho: str, separador: str = "/") -> str:
     """
     Valida e normaliza um caminho fornecido.
-
-    - Verifica se o caminho é uma string não vazia.
-    - Remove múltiplos separadores consecutivos por um único separador.
-    - Retorna o caminho normalizado, sem separadores ao final.
-
-    :param caminho: Caminho a ser validado.
-    :param separador: Separador a ser usado para normalização (padrão: "/").
-    :return: Caminho normalizado.
-    :raises ValueError: Se o caminho for inválido (não string ou vazio).
-    :raises KeyError: Se a regex de validação não for encontrada.
     """
     if not isinstance(caminho, str) or not caminho.strip():
         raise ValueError("O caminho deve ser uma string não vazia.")
 
-    if regex := REGEX_UTEIS.get("VALIDACAO_CAMINHO"):
-        return re.sub(regex, separador, caminho.strip()).rstrip(separador)
-    else:
+    regex_validacao = REGEX_UTEIS.get("VALIDACAO_CAMINHO")
+    if not regex_validacao:
         raise KeyError("Expressão regular para validação de caminho não encontrada.")
 
-# Funções para manipulação de caminhos
+    # Remove múltiplos separadores consecutivos e espaços nas extremidades
+    caminho_normalizado = re.sub(regex_validacao, separador, caminho.strip())
+    return caminho_normalizado.rstrip(separador)
+
+
 def sanitizar_caminho(caminho: str) -> str:
     """
     Remove caracteres inválidos do caminho e normaliza-o.
     """
-    caminho = validar_caminho(caminho)
-    return re.sub(REGEX_UTEIS["SANITIZAR_CAMINHO"], "", caminho)
+    caminho_normalizado = validar_caminho(caminho)
+    if regex_sanitizacao := REGEX_UTEIS.get("SANITIZAR_CAMINHO"):
+        return re.sub(regex_sanitizacao, "", caminho_normalizado)
+    else:
+        raise KeyError("Expressão regular para sanitização de caminho não encontrada.")
+
 
 def verificar_caminho_absoluto(caminho: str) -> bool:
     """
     Verifica se o caminho fornecido é absoluto.
     """
-    caminho = validar_caminho(caminho)
-    return bool(re.match(REGEX_UTEIS["CAMINHO_ABSOLUTO"], caminho))
+    caminho_normalizado = validar_caminho(caminho)
+    if regex_absoluto := REGEX_UTEIS.get("CAMINHO_ABSOLUTO"):
+        return bool(re.match(regex_absoluto, caminho_normalizado))
+    else:
+        raise KeyError(
+            "Expressão regular para verificar caminho absoluto não encontrada."
+        )
+
 
 def verificar_caminho_relativo(caminho: str) -> bool:
     """
     Verifica se o caminho fornecido é relativo.
     """
-    caminho = validar_caminho(caminho)
-    return not verificar_caminho_absoluto(caminho) and \
-           bool(re.match(REGEX_UTEIS["CAMINHO_RELATIVO"], caminho))
+    caminho_normalizado = validar_caminho(caminho)
+    if regex_relativo := REGEX_UTEIS.get("CAMINHO_RELATIVO"):
+        return bool(re.match(regex_relativo, caminho_normalizado))
+    else:
+        raise KeyError(
+            "Expressão regular para verificar caminho relativo não encontrada."
+        )
+
 
 def extrair_pasta_principal(caminho: str) -> Optional[str]:
     """
     Extrai a pasta principal do caminho fornecido.
     """
-    caminho = validar_caminho(caminho)
-    match = re.search(REGEX_UTEIS["EXTRAIR_PASTA"], caminho)
+    caminho_normalizado = validar_caminho(caminho)
+    regex_pasta = REGEX_UTEIS.get("EXTRAIR_PASTA")
+    if not regex_pasta:
+        raise KeyError("Expressão regular para extrair pasta não encontrada.")
+
+    match = re.search(regex_pasta, caminho_normalizado)
     return match[1] if match else None
+
 
 def verificar_arquivo(caminho: str) -> bool:
     """
     Verifica se o caminho representa um arquivo.
     """
-    caminho = validar_caminho(caminho)
-    return bool(re.search(REGEX_UTEIS["NOME_ITEM"], caminho))
-
+    caminho_normalizado = validar_caminho(caminho)
+    if regex_arquivo := REGEX_UTEIS.get("NOME_ITEM"):
+        return bool(re.search(regex_arquivo, caminho_normalizado))
+    else:
+        raise KeyError("Expressão regular para verificar arquivos não encontrada.")
 
 
 # # Funções para manipulação de datas
