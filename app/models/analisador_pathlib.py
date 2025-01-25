@@ -1,4 +1,4 @@
-# # pylint: disable=C, R, E, W
+# pylint: disable=C, R, E, W
 
 # from dataclasses import dataclass, field
 # import json
@@ -76,7 +76,7 @@
 #         return json_objeto_caminho
 
 
-# # Exemplo de uso
+# Exemplo de uso
 # tipos_de_caminhos: Dict[str, str] = {
 #     "Arquivo - Absoluto e válido": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
 #     "Arquivo - Relativo e válido": "../imagens/foto.jpg",

@@ -1,4 +1,4 @@
-# # pylint: disable=C, R, E, W
+# pylint: disable=C, R, E, W
 
 # import json
 # import re
@@ -31,7 +31,7 @@
 #         self.pasta_mae: Optional[str]
 #         self.eh_arquivo: bool
 #         self.eh_pasta: bool
-        
+
 #         # Inicializa os atributos do objeto após a criação.
 #         self._processar_caminho()
 
@@ -69,128 +69,139 @@
 #         return json.dumps(self.para_dict(), indent=4, ensure_ascii=False)
 
 
-# # # Exemplo de uso
-# # tipos_de_caminhos: Dict[str, str] = {
-# #     "Arquivo - Absoluto e válido": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
-# #     "Arquivo - Relativo e válido": "../imagens/foto.jpg",
-# #     "Arquivo - Absoluto e inválido": "/home/pedro-pm-dias/arquivo?*<>.html",
-# #     "Arquivo - Relativo e inválido": "../imagens/arquivo?*<>.jpg",
-# #     "Pasta - Absoluta e válida": "/home/pedro-pm-dias/Downloads/Chrome/",
-# #     "Pasta - Relativa e válida": "./Downloads/Chrome/",
-# #     "Pasta - Absoluta e inválida": "/home/pedro-pm-dias/Downloads/Chrome/<>/",
-# #     "Pasta - Relativa e inválida": "./Downloads/Chrome/<>/",
-# # }
+# Exemplo de uso
+# tipos_de_caminhos: Dict[str, str] = {
+#     "Arquivo - Absoluto e válido": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
+#     "Arquivo - Relativo e válido": "../imagens/foto.jpg",
+#     "Arquivo - Absoluto e inválido": "/home/pedro-pm-dias/arquivo?*<>.html",
+#     "Arquivo - Relativo e inválido": "../imagens/arquivo?*<>.jpg",
+#     "Pasta - Absoluta e válida": "/home/pedro-pm-dias/Downloads/Chrome/",
+#     "Pasta - Relativa e válida": "./Downloads/Chrome/",
+#     "Pasta - Absoluta e inválida": "/home/pedro-pm-dias/Downloads/Chrome/<>/",
+#     "Pasta - Relativa e inválida": "./Downloads/Chrome/<>/",
+# }
 
-# # for tipo, caminho in tipos_de_caminhos.items():
-# #     print(f"\nTipo do caminho: {tipo}")
-# #     caminho_obj = SanitizePath(caminho_original=caminho)
-# #     data = caminho_obj.gerar_json()
-# #     print(data)
+# for tipo, caminho in tipos_de_caminhos.items():
+#     print(f"\nTipo do caminho: {tipo}")
+#     caminho_obj = SanitizePath(caminho_original=caminho)
+#     data = caminho_obj.gerar_json()
+#     print(data)
 
 
-# # # Tipo do caminho: Arquivo - Absoluto e válido
-# # {
-# #     'caminho_original': '/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html',
-# #     'caminho_sanitizado': '/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html',
-# #     'formato_valido': True,
-# #     'eh_absoluto': True,
-# #     'eh_relativo': False,
-# #     'numero_diretorios': 4,
-# #     'nome_item': 'favoritos_23_12_2024.html',
-# #     'pasta_principal': 'Chrome',
-# #     'pasta_mae': 'Downloads',
-# #     'eh_arquivo': True,
-# #     'eh_pasta': False
-# # }
+# Tipo do caminho: Arquivo - Absoluto e válido
+# {
+#     'caminho_original': '/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html',
+#     'caminho_sanitizado': '/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html',
+#     'formato_valido': True,
+#     'eh_absoluto': True,
+#     'eh_relativo': False,
+#     'numero_diretorios': 4,
+#     'nome_item': 'favoritos_23_12_2024.html',
+#     'pasta_principal': 'Chrome',
+#     'pasta_mae': 'Downloads',
+#     'eh_arquivo': True,
+#     'eh_pasta': False
+# }
 
-# # # Tipo do caminho: Arquivo - Relativo e válido
-# # {
-# #     'caminho_original': '../imagens/foto.jpg',
-# #     'caminho_sanitizado': '../imagens/foto.jpg',
-# #     'formato_valido': True,
-# #     'eh_absoluto': False,
-# #     'eh_relativo': True,
-# #     'numero_diretorios': 1,
-# #     'nome_item': 'foto.jpg',
-# #     'pasta_principal': 'imagens',
-# #     'pasta_mae': '..',
-# #     'eh_arquivo': True,
-# #     'eh_pasta': False
-# # }
+# Tipo do caminho: Arquivo - Relativo e válido
+# {
+#     'caminho_original': '../imagens/foto.jpg',
+#     'caminho_sanitizado': '../imagens/foto.jpg',
+#     'formato_valido': True,
+#     'eh_absoluto': False,
+#     'eh_relativo': True,
+#     'numero_diretorios': 1,
+#     'nome_item': 'foto.jpg',
+#     'pasta_principal': 'imagens',
+#     'pasta_mae': '..',
+#     'eh_arquivo': True,
+#     'eh_pasta': False
+# }
 
-# # # Tipo do caminho: Arquivo - Absoluto e inválido
-# # {
-# #     'caminho_original': '/home/pedro-pm-dias/arquivo?*<>.html', 'caminho_sanitizado': '/home/pedro-pm-dias/arquivo.html', 'formato_valido': True, 'eh_absoluto': True, 'eh_relativo': False, 'numero_diretorios': 2, 'nome_item': 'arquivo.html', 'pasta_principal': 'pedro-pm-dias', 'pasta_mae': 'home', 'eh_arquivo': True, 'eh_pasta': False}
+# Tipo do caminho: Arquivo - Absoluto e inválido
+# {
+#     'caminho_original': '/home/pedro-pm-dias/arquivo?*<>.html',
+#     'caminho_sanitizado': '/home/pedro-pm-dias/arquivo.html',
+#     'formato_valido': True,
+#     'eh_absoluto': True,
+#     'eh_relativo': False,
+#     'numero_diretorios': 2,
+#     'nome_item': 'arquivo.html',
+#     'pasta_principal': 'pedro-pm-dias',
+#     'pasta_mae': 'home',
+#     'eh_arquivo': True,
+#     'eh_pasta': False
+# }
 
-# # # Tipo do caminho: Arquivo - Relativo e inválido
-# # {
-# #     'caminho_original': '../imagens/arquivo?*<>.jpg',
-# #     'caminho_sanitizado': '../imagens/arquivo.jpg',
-# #     'formato_valido': True,
-# #     'eh_absoluto': False,
-# #     'eh_relativo': True,
-# #     'numero_diretorios': 1,
-# #     'nome_item': 'arquivo.jpg',
-# #     'pasta_principal': 'imagens',
-# #     'pasta_mae': '..',
-# #     'eh_arquivo': True,
-# #     'eh_pasta': False
-# # }
+# Tipo do caminho: Arquivo - Relativo e inválido
+# {
+#     'caminho_original': '../imagens/arquivo?*<>.jpg',
+#     'caminho_sanitizado': '../imagens/arquivo.jpg',
+#     'formato_valido': True,
+#     'eh_absoluto': False,
+#     'eh_relativo': True,
+#     'numero_diretorios': 1,
+#     'nome_item': 'arquivo.jpg',
+#     'pasta_principal': 'imagens',
+#     'pasta_mae': '..',
+#     'eh_arquivo': True,
+#     'eh_pasta': False
+# }
 
-# # # Tipo do caminho: Pasta - Absoluta e válida
-# # {
-# #     'caminho_original': '/home/pedro-pm-dias/Downloads/Chrome/',
-# #     'caminho_sanitizado': '/home/pedro-pm-dias/Downloads/Chrome',
-# #     'formato_valido': True,
-# #     'eh_absoluto': True,
-# #     'eh_relativo': False,
-# #     'numero_diretorios': 3,
-# #     'nome_item': 'Chrome',
-# #     'pasta_principal': 'Downloads',
-# #     'pasta_mae': 'pedro-pm-dias',
-# #     'eh_arquivo': False,
-# #     'eh_pasta': True
-# # }
+# Tipo do caminho: Pasta - Absoluta e válida
+# {
+#     'caminho_original': '/home/pedro-pm-dias/Downloads/Chrome/',
+#     'caminho_sanitizado': '/home/pedro-pm-dias/Downloads/Chrome',
+#     'formato_valido': True,
+#     'eh_absoluto': True,
+#     'eh_relativo': False,
+#     'numero_diretorios': 3,
+#     'nome_item': 'Chrome',
+#     'pasta_principal': 'Downloads',
+#     'pasta_mae': 'pedro-pm-dias',
+#     'eh_arquivo': False,
+#     'eh_pasta': True
+# }
 
-# # # Tipo do caminho: Pasta - Relativa e válida
-# # {
-# #     'caminho_original': './Downloads/Chrome/',
-# #     'caminho_sanitizado': './Downloads/Chrome',
-# #     'formato_valido': True,
-# #     'eh_absoluto': False, 'eh_relativo': True,
-# #     'numero_diretorios': 1,
-# #     'nome_item': 'Chrome',
-# #     'pasta_principal': 'Downloads',
-# #     'pasta_mae': '.',
-# #     'eh_arquivo': False,
-# #     'eh_pasta': True
-# # }
+# Tipo do caminho: Pasta - Relativa e válida
+# {
+#     'caminho_original': './Downloads/Chrome/',
+#     'caminho_sanitizado': './Downloads/Chrome',
+#     'formato_valido': True,
+#     'eh_absoluto': False, 'eh_relativo': True,
+#     'numero_diretorios': 1,
+#     'nome_item': 'Chrome',
+#     'pasta_principal': 'Downloads',
+#     'pasta_mae': '.',
+#     'eh_arquivo': False,
+#     'eh_pasta': True
+# }
 
-# # # Tipo do caminho: Pasta - Absoluta e inválida
-# # {
-# #     'caminho_original': '/home/pedro-pm-dias/Downloads/Chrome/<>/',
-# #     'caminho_sanitizado': '/home/pedro-pm-dias/Downloads/Chrome',
-# #     'formato_valido': True,
-# #     'eh_absoluto': True,
-# #     'eh_relativo': False,
-# #     'numero_diretorios': 3, 'nome_item': 'Chrome',
-# #     'pasta_principal': 'Downloads',
-# #     'pasta_mae': 'pedro-pm-dias',
-# #     'eh_arquivo': False,
-# #     'eh_pasta': True
-# # }
+# Tipo do caminho: Pasta - Absoluta e inválida
+# {
+#     'caminho_original': '/home/pedro-pm-dias/Downloads/Chrome/<>/',
+#     'caminho_sanitizado': '/home/pedro-pm-dias/Downloads/Chrome',
+#     'formato_valido': True,
+#     'eh_absoluto': True,
+#     'eh_relativo': False,
+#     'numero_diretorios': 3, 'nome_item': 'Chrome',
+#     'pasta_principal': 'Downloads',
+#     'pasta_mae': 'pedro-pm-dias',
+#     'eh_arquivo': False,
+#     'eh_pasta': True
+# }
 
-# # # Tipo do caminho: Pasta - Relativa e inválida
-# # {
-# #     'caminho_original': './Downloads/Chrome/<>/',
-# #     'caminho_sanitizado': './Downloads/Chrome',
-# #     'formato_valido': True,
-# #     'eh_absoluto': False,
-# #     'eh_relativo': True,
-# #     'numero_diretorios': 1,
-# #     'nome_item': 'Chrome',
-# #     'pasta_principal': 'Downloads',
-# #     'pasta_mae': '.',
-# #     'eh_arquivo': False,
-# #     'eh_pasta': True
-# # }
+# Tipo do caminho: Pasta - Relativa e inválida
+# {
+#     'caminho_original': './Downloads/Chrome/<>/',
+#     'caminho_sanitizado': './Downloads/Chrome',
+#     'formato_valido': True,
+#     'eh_absoluto': False,
+#     'eh_relativo': True,
+#     'numero_diretorios': 1,
+#     'nome_item': 'Chrome',
+#     'pasta_principal': 'Downloads',
+#     'pasta_mae': '.',
+#     'eh_arquivo': False,
+#     'eh_pasta': True
+# }

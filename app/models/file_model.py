@@ -1,4 +1,4 @@
-# # pylint: disable=C, R, E, W
+# pylint: disable=C, R, E, W
 
 # Tabela 1: Dados de um Arquivo
 # Método/Propriedade	Descrição
@@ -22,7 +22,7 @@
 # .group()	Retorna o grupo ao qual o arquivo pertence.
 
 
-# # Exemplo de uso
+# Exemplo de uso
 # if __name__ == "__main__":
 #     caminhos_para_validar: list[str] = [
 #         "/caminho/inexistente/",
