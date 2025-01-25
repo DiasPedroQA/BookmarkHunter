@@ -5,6 +5,7 @@
     "analyse",
     "Analyse",
     "analysed",
+    "AORUS",
     "argparse",
     "asdict",
     "asttokens",
@@ -14,6 +15,7 @@
     "booleaness",
     "booleano",
     "Booleano",
+    "cachedir",
     "celerybeat",
     "cenarios",
     "certifi",
@@ -66,6 +68,7 @@
     "lder",
     "legivel",
     "levelname",
+    "linux",
     "lxml",
     "markupsafe",
     "matplotlib",
@@ -108,6 +111,7 @@
     "relatorio",
     "relatrio",
     "rgxs",
+    "rootdir",
     "ropeproject",
     "rwxr",
     "rwxrwxrwx",
@@ -154,5 +158,6 @@
   "python.testing.pytestEnabled": true,
   "python.testing.pytestArgs": ["tests"],
   "github-actions.workflows.pinned.workflows": [],
-  "python.REPL.enableREPLSmartSend": false
+  "python.REPL.enableREPLSmartSend": false,
+  "wolf.disableHotModeWarning": true
 }

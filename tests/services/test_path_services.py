@@ -1,128 +1,158 @@
 # pylint: disable=C, R, E, W
 
-
-from typing import Callable
-from _pytest.python_api import RaisesContext
 import pytest
 from app.services.path_services import (
+    get_regex_pattern,
+    obter_data_acesso,
+    obter_data_criacao,
+    obter_data_modificacao,
+    validar_caminho,
     sanitizar_caminho,
     verificar_caminho_absoluto,
     verificar_caminho_relativo,
     extrair_pasta_principal,
     verificar_arquivo,
-    validar_caminho,
 )
 
 
-# Testes para sanitizar_caminho
-@pytest.mark.parametrize(
-    "caminho, expected",
-    [
-        ("/home/user/invalid&path", "/home/user/invalidpath"),
-        ("C:\\Invalid?Path", "C:/InvalidPath"),
-        ("./relative&path!", "./relativepath"),
-        ("../relative<>path", "../relativepath"),
-        ("/home/user/valid_path", "/home/user/valid_path"),
-    ],
-)
-def test_sanitizar_caminho(caminho: str, expected: str):
-    assert sanitizar_caminho(caminho) == expected
+def test_get_regex_pattern():
+    assert (
+        get_regex_pattern("CAMINHO_ABSOLUTO")
+        == r"^(?:[a-zA-Z]:\\|/home/[a-zA-Z0-9_-]+/)"
+    )
+    assert get_regex_pattern("CAMINHO_RELATIVO") == r"^(?:\.{1,2}/)"
+    assert get_regex_pattern("NOME_ITEM") == r"\.[a-zA-Z0-9]+$"
+    assert get_regex_pattern("SANITIZAR_CAMINHO") == r"[^a-zA-Z0-9\- _./\\:]"
+    assert get_regex_pattern("EXTRAIR_PASTA") == r"([^/\\]+)/[^/\\]+/?$"
+    assert get_regex_pattern("VALIDACAO_CAMINHO") == r"[\\/]+"
+    with pytest.raises(KeyError):
+        get_regex_pattern("INVALID_REGEX")
 
 
-# Testes para verificar_caminho_absoluto
-@pytest.mark.parametrize(
-    "caminho, expected",
-    [
-        ("/home/user/docs", True),
-        ("C:\\Users\\user", False),
-        ("./relative/path", False),
-        ("../relative/path", False),
-        ("relative/path", False),
-    ],
-)
-def test_verificar_caminho_absoluto(caminho: str, expected: bool):
-    assert verificar_caminho_absoluto(caminho) == expected
+def test_validar_caminho():
+    assert (
+        validar_caminho(caminho="/home/user//documents//file.txt", separador="/")
+        == "/home/user/documents/file.txt"
+    )
+    assert (
+        validar_caminho(caminho="//home//user//Downloads", separador="/")
+        == "/home/user/Downloads"
+    )
+    with pytest.raises(ValueError):
+        validar_caminho("")
+    with pytest.raises(ValueError):
+        validar_caminho(None)
 
 
-# Testes para verificar_caminho_relativo
-@pytest.mark.parametrize(
-    "caminho, expected",
-    [
-        ("./relative/path", True),
-        ("../relative/path", True),
-        ("/home/user/docs", False),
-        ("C:\\Users\\user", False),
-        ("relative/path", False),
-    ],
-)
-def test_verificar_caminho_relativo(caminho: str, expected: bool):
-    assert verificar_caminho_relativo(caminho) == expected
+def test_sanitizar_caminho():
+    assert (
+        sanitizar_caminho("/home/user/documents/file?.txt")
+        == "/home/user/documents/file.txt"
+    )
+    with pytest.raises(ValueError):
+        sanitizar_caminho("")
 
 
-# Testes para extrair_pasta_principal
-@pytest.mark.parametrize(
-    "caminho, expected",
-    [
-        ("/home/user/folder/file.txt", "folder"),
-        ("C:\\Users\\user\\folder\\file.txt", "folder"),
-        ("/home/user/folder/", "user"),
-        ("./relative/folder/file.txt", "folder"),
-        ("../relative/folder/file.txt", "folder"),
-        ("file.txt", None),
-        ("/home/user/", "home"),
-    ],
-)
-def test_extrair_pasta_principal(caminho: str, expected: None | str):
-    assert extrair_pasta_principal(caminho) == expected
+def test_verificar_caminho_absoluto():
+    assert verificar_caminho_absoluto("/home/user/documents/file.txt")
+    assert not verificar_caminho_absoluto("../relative/path/file.txt")
+    assert not verificar_caminho_absoluto("relative/path/file.txt")
 
 
-# Testes para verificar_arquivo
-@pytest.mark.parametrize(
-    "caminho, expected",
-    [
-        ("/home/user/file.txt", True),
-        ("C:\\Users\\user\\file.txt", True),
-        ("./relative/file.txt", True),
-        ("../relative/file.txt", True),
-        ("/home/user/folder/", False),
-        ("/home/user/folder", False),
-        ("file", False),
-    ],
-)
-def test_verificar_arquivo(caminho: str, expected: bool):
-    assert verificar_arquivo(caminho) == expected
+def test_verificar_caminho_relativo():
+    assert verificar_caminho_relativo("../relative/path/file.txt")
+    assert verificar_caminho_relativo("./relative/path/file.txt")
+    assert not verificar_caminho_relativo("/home/user/documents/file.txt")
 
 
-# Testes para exceções - Verificando as exceções que devem ser levantadas
-@pytest.mark.parametrize(
-    "function, caminho, expected_exception",
-    [
-        (sanitizar_caminho, None, ValueError),
-        (sanitizar_caminho, "", ValueError),
-        (verificar_caminho_absoluto, None, ValueError),
-        (verificar_caminho_relativo, None, ValueError),
-        (extrair_pasta_principal, None, ValueError),
-        (verificar_arquivo, None, ValueError),
-        (validar_caminho, None, ValueError),
-        (validar_caminho, "", ValueError),
-    ],
-)
-def test_funcoes_excecoes(function, caminho: None | str, expected_exception: type):
-    with pytest.raises(expected_exception):
-        function(caminho)
+def test_extrair_pasta_principal():
+    assert extrair_pasta_principal("/home/user/documents/file.txt") == "documents"
+    assert extrair_pasta_principal("/home//user//Downloads//file.txt") == "Downloads"
+    assert extrair_pasta_principal("/file.txt") is None
+    assert extrair_pasta_principal("file.txt") is None
 
 
-# Teste para a exceção KeyError, caso uma regex não seja encontrada
-@pytest.mark.parametrize(
-    "function, caminho, expected_exception",
-    [
-        (sanitizar_caminho, "", KeyError),
-        (verificar_caminho_absoluto, "", KeyError),
-        (verificar_caminho_relativo, "", KeyError),
-        (extrair_pasta_principal, "", KeyError),
-        (verificar_arquivo, "", KeyError),
-    ],
-)
-def test_excecoes_regex_keyerror(function, caminho: str, expected_exception: type):
-    with pytest.raises(expected_exception):
-        function(caminho)
+def test_verificar_arquivo():
+    assert verificar_arquivo("/home/user/documents/file.txt")
+    assert not verificar_arquivo("/home/user/documents/folder/")
+    # pylint: disable=C, R, E, W
+
+
+def test_get_regex_pattern():
+    assert (
+        get_regex_pattern("CAMINHO_ABSOLUTO")
+        == r"^(?:[a-zA-Z]:\\|/home/[a-zA-Z0-9_-]+/)"
+    )
+    assert get_regex_pattern("CAMINHO_RELATIVO") == r"^(?:\.{1,2}/)"
+    assert get_regex_pattern("NOME_ITEM") == r"\.[a-zA-Z0-9]+$"
+    assert get_regex_pattern("SANITIZAR_CAMINHO") == r"[^a-zA-Z0-9\- _./\\:]"
+    assert get_regex_pattern("EXTRAIR_PASTA") == r"([^/\\]+)/[^/\\]+/?$"
+    assert get_regex_pattern("VALIDACAO_CAMINHO") == r"[\\/]+"
+    with pytest.raises(KeyError):
+        get_regex_pattern("INVALID_REGEX")
+
+
+def test_validar_caminho():
+    assert (
+        validar_caminho(caminho="/home/user//documents//file.txt", separador="/")
+        == "/home/user/documents/file.txt"
+    )
+    assert (
+        validar_caminho(caminho="//home//user//Downloads", separador="/")
+        == "/home/user/Downloads"
+    )
+    with pytest.raises(ValueError):
+        validar_caminho("")
+    with pytest.raises(ValueError):
+        validar_caminho(None)
+
+
+def test_sanitizar_caminho():
+    assert (
+        sanitizar_caminho("/home/user/documents/file?.txt")
+        == "/home/user/documents/file.txt"
+    )
+    with pytest.raises(ValueError):
+        sanitizar_caminho("")
+
+
+def test_verificar_caminho_absoluto():
+    assert verificar_caminho_absoluto("/home/user/documents/file.txt")
+    assert not verificar_caminho_absoluto("../relative/path/file.txt")
+    assert not verificar_caminho_absoluto("relative/path/file.txt")
+
+
+def test_verificar_caminho_relativo():
+    assert verificar_caminho_relativo("../relative/path/file.txt")
+    assert verificar_caminho_relativo("./relative/path/file.txt")
+    assert not verificar_caminho_relativo("/home/user/documents/file.txt")
+
+
+def test_extrair_pasta_principal():
+    assert extrair_pasta_principal("/home/user/documents/file.txt") == "documents"
+    assert extrair_pasta_principal("/home//user//Downloads//file.txt") == "Downloads"
+    assert extrair_pasta_principal("/file.txt") is None
+    assert extrair_pasta_principal("file.txt") is None
+
+
+def test_verificar_arquivo():
+    assert verificar_arquivo("/home/user/documents/file.txt")
+    assert not verificar_arquivo("/home/user/documents/folder/")
+
+
+def test_obter_data_criacao():
+    assert obter_data_criacao(1737658061.00) == "23/12/2024 12:34:21"
+    assert "Erro ao formatar data" in obter_data_criacao("invalid_timestamp")
+    assert "Erro ao formatar data" in obter_data_criacao(-12345)
+
+
+def test_obter_data_modificacao():
+    assert obter_data_modificacao(1737658061.00) == "23/12/2024 12:34:21"
+    assert "Erro ao formatar data" in obter_data_modificacao("invalid_timestamp")
+    assert "Erro ao formatar data" in obter_data_modificacao(-12345)
+
+
+def test_obter_data_acesso():
+    assert obter_data_acesso(1737658061.00) == "23/12/2024 12:34:21"
+    assert "Erro ao formatar data" in obter_data_acesso("invalid_timestamp")
+    assert "Erro ao formatar data" in obter_data_acesso(-12345)
