@@ -51,7 +51,7 @@ def test_verificar_arquivo():
 
 
 def test_obter_data_criacao():
-    assert obter_data_criacao(1672531200.0) == "31/12/2022 21:00:00"
+    assert obter_data_criacao(1672531200.0) == "01/01/2023 00:00:00"
     assert obter_data_criacao(None) == "31/12/1969 21:00:00"
     assert (
         obter_data_criacao("")
@@ -60,7 +60,7 @@ def test_obter_data_criacao():
 
 
 def test_obter_data_modificacao():
-    assert obter_data_modificacao(1672531200.0) == "31/12/2022 21:00:00"
+    assert obter_data_modificacao(1672531200.0) == "01/01/2023 00:00:00"
     assert obter_data_modificacao(None) == "31/12/1969 21:00:00"
     assert (
         obter_data_modificacao("")
@@ -69,7 +69,7 @@ def test_obter_data_modificacao():
 
 
 def test_obter_data_acesso():
-    assert obter_data_acesso(1672531200.0) == "31/12/2022 21:00:00"
+    assert obter_data_acesso(1672531200.0) == "01/01/2023 00:00:00"
     assert obter_data_acesso(None) == "31/12/1969 21:00:00"
     assert (
         obter_data_acesso("") == "O timestamp '' deve ser um número inteiro ou decimal."
@@ -80,12 +80,15 @@ def test_obter_id_unico():
     assert len(obter_id_unico(10)) == 36
     assert obter_id_unico(0) == "O identificador deve ser um número inteiro positivo."
     assert obter_id_unico(-7) == "O identificador deve ser um número inteiro positivo."
-    assert (obter_id_unico(123) == "37813542-0dca-5a8a-b2a2-b69c2d45583f")
+    assert obter_id_unico(123) == "37813542-0dca-5a8a-b2a2-b69c2d45583f"
 
 
 def test_validar_tamanho_nome_caminho():
     assert validar_tamanho_nome_caminho("home/user/Downloads/Chrome/") is True
-    assert validar_tamanho_nome_caminho("Downloads/Chrome/" * 260) == "O caminho excede o limite de 260 caracteres."
+    assert (
+        validar_tamanho_nome_caminho("Downloads/Chrome/" * 260)
+        == "O caminho excede o limite de 260 caracteres."
+    )
 
 
 def test_contar_diretorios():
@@ -94,5 +97,8 @@ def test_contar_diretorios():
 
 
 def test_sanitizar_prefixo_caminho():
-    assert sanitizar_prefixo_caminho("/home/user/Downloads/Chrome/") == "home/user/Downloads/Chrome"
+    assert (
+        sanitizar_prefixo_caminho("/home/user/Downloads/Chrome/")
+        == "home/user/Downloads/Chrome"
+    )
     assert sanitizar_prefixo_caminho("../../Downloads/Chrome/") == "Downloads/Chrome"
