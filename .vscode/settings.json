@@ -29,6 +29,7 @@
     "cython",
     "dateutil",
     "debugpy",
+    "descricao",
     "diretorio",
     "diretorios",
     "dmypy",

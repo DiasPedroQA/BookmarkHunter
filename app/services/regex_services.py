@@ -1,3 +1,5 @@
+# app/services/regex_services.py
+
 # pylint: disable=C, R, E, W
 
 """
@@ -145,3 +147,71 @@ def contar_diretorios(caminho: str) -> int:
 def sanitizar_prefixo_caminho(caminho: str) -> str:
     """Remove prefixos inválidos e normaliza caminhos relativos."""
     return caminho.strip("/\\.")
+
+
+# def processar_regex_caminhos(caminhos: Dict[str, str]) -> None:
+#     """
+#     Processa diferentes tipos de caminhos utilizando funções regex.
+    
+#     :param caminhos: Um dicionário com descrições e caminhos.
+#     """
+#     for descricao, caminho in caminhos.items():
+#         print(f"\n[Descrição do Caminho]: {descricao}")
+#         print(f"[Caminho Original]: {caminho}")
+
+#         # 1. Validar e sanitizar o caminho
+#         caminho_validado = validar_caminho(caminho)
+#         caminho_sanitizado = sanitizar_caminho(caminho)
+#         print(f"  - Caminho Validado: {caminho_validado}")
+#         print(f"  - Caminho Sanitizado: {caminho_sanitizado}")
+
+#         # 2. Verificar se é absoluto ou relativo
+#         eh_absoluto = verificar_caminho_absoluto(caminho_sanitizado)
+#         eh_relativo = verificar_caminho_relativo(caminho_sanitizado)
+#         print(f"  - É Absoluto: {'Sim' if eh_absoluto else 'Não'}")
+#         print(f"  - É Relativo: {'Sim' if eh_relativo else 'Não'}")
+
+#         # 3. Extrair informações do caminho
+#         pasta_principal = extrair_pasta_principal(caminho_sanitizado)
+#         nome_eh_arquivo = verificar_arquivo(caminho_sanitizado)
+#         print(f"  - Pasta Principal: {pasta_principal if pasta_principal else 'Não disponível'}")
+#         print(f"  - É Arquivo: {'Sim' if nome_eh_arquivo else 'Não'}")
+
+#         # 4. Contar diretórios no caminho
+#         numero_diretorios = contar_diretorios(caminho_sanitizado)
+#         print(f"  - Número de Diretórios: {numero_diretorios}")
+
+#         # 5. Validar tamanho do caminho
+#         tamanho_valido = validar_tamanho_nome_caminho(caminho_sanitizado)
+#         print(f"  - Tamanho Válido: {'Sim' if tamanho_valido is True else tamanho_valido}")
+
+#         # 6. Sanitizar prefixo do caminho
+#         prefixo_sanitizado = sanitizar_prefixo_caminho(caminho_sanitizado)
+#         print(f"  - Caminho com Prefixo Sanitizado: {prefixo_sanitizado}")
+
+#         # 7. Obter ID único baseado em um identificador (simulado)
+#         identificador = hash(caminho_sanitizado)
+#         id_unico = obter_id_unico(identificador)
+#         print(f"  - ID Único: {id_unico}")
+
+#         # 8. Trabalhar com timestamps (simulado)
+#         timestamp_simulado = 1672531199.0  # 31/12/2022 @ 23:59 (UTC)
+#         print(f"  - Data de Criação: {obter_data_criacao(timestamp_simulado)}")
+#         print(f"  - Data de Modificação: {obter_data_modificacao(timestamp_simulado)}")
+#         print(f"  - Data de Acesso: {obter_data_acesso(timestamp_simulado)}")
+
+
+# # Dicionário de tipos de caminhos para teste
+# tipos_de_caminhos: Dict[str, str] = {
+#     "Arquivo - Absoluto e válido": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
+#     "Arquivo - Relativo e válido": "../imagens/foto.jpg",
+#     "Arquivo - Absoluto e inválido": "/home/pedro-pm-dias/arquivo?*<>.html",
+#     "Arquivo - Relativo e inválido": "../imagens/arquivo?*<>.jpg",
+#     "Pasta - Absoluta e válida": "/home/pedro-pm-dias/Downloads/Chrome/",
+#     "Pasta - Relativa e válida": "./Downloads/Chrome/",
+#     "Pasta - Absoluta e inválida": "/home/pedro-pm-dias/Downloads/Chrome/<>/",
+#     "Pasta - Relativa e inválida": "./Downloads/Chrome/<>/",
+# }
+
+# # Executar o processamento
+# processar_regex_caminhos(tipos_de_caminhos)
