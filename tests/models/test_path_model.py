@@ -1,112 +1,63 @@
 # pylint: disable=C, R, E, W
 
+import pytest
+from app.models.path_model import CaminhoBase
+from app.services.path_services import RegexPathAnalyzer
+import json
+
 """
 Os testes verificam a funcionalidade do modelo para diferentes tipos de caminhos,
 incluindo caminhos absolutos e relativos, válidos e inválidos, arquivos e diretórios.
 """
 
-# from app.models.path_model import CaminhoUtils
-# import pytest
-# from pathlib import Path
+# Testando a inicialização do objeto CaminhoBase
+def test_caminho_base_init():
+    caminho = "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
+    caminho_obj = CaminhoBase(caminho_bruto=caminho)
+    assert caminho_obj.caminho_original == caminho
 
+# Testando o método obter_id_unico
+def test_obter_id_unico():
+    caminho = "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
+    id_unico = CaminhoBase.obter_id_unico(caminho)
+    assert isinstance(id_unico, str)
+    assert len(id_unico) == 36  # UUID length
 
-# # Testando o método validar_caminho_como_string
-# def test_validar_caminho_como_string():
-#     # Caminhos válidos
-#     assert CaminhoUtils.validar_caminho_como_string("./") == False
-#     assert CaminhoUtils.validar_caminho_como_string(".") == False
-#     assert CaminhoUtils.validar_caminho_como_string(".venv") == True
-#     assert CaminhoUtils.validar_caminho_como_string("../Downloads") == True
-#     assert CaminhoUtils.validar_caminho_como_string("../Downloads/") == True
-#     assert CaminhoUtils.validar_caminho_como_string("/../Downloads") == True
-#     assert CaminhoUtils.validar_caminho_como_string("/../Downloads/") == True
-#     assert CaminhoUtils.validar_caminho_como_string("/../") == True
+# Testando o método para_dict
+def test_para_dict(mocker):
+    caminho = "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
+    caminho_obj = CaminhoBase(caminho_bruto=caminho)
+    
+    mocker.patch.object(RegexPathAnalyzer, 'analisar_caminho', return_value="analisado")
+    caminho_obj.caminho_analisado = "analisado"
+    
+    caminho_dict = caminho_obj.para_dict()
+    assert isinstance(caminho_dict, dict)
+    assert caminho_dict["caminho_original"] == caminho
+    assert "id_unico" in caminho_dict
+    assert isinstance(caminho_dict["analises_caminho"], RegexPathAnalyzer)
 
-#     # Caminhos inválidos
-#     assert CaminhoUtils.validar_caminho_como_string(0) == False
-#     assert CaminhoUtils.validar_caminho_como_string(-42) == False
-#     assert CaminhoUtils.validar_caminho_como_string(123) == False
-#     assert CaminhoUtils.validar_caminho_como_string(None) == False
-#     assert CaminhoUtils.validar_caminho_como_string([]) == False
-#     assert CaminhoUtils.validar_caminho_como_string(()) == False
-#     assert CaminhoUtils.validar_caminho_como_string({}) == False
-#     assert CaminhoUtils.validar_caminho_como_string(True) == False
-#     assert CaminhoUtils.validar_caminho_como_string(False) == False
+# Testando o método gerar_json
+def test_gerar_json(mocker):
+    caminho = "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
+    caminho_obj = CaminhoBase(caminho_bruto=caminho)
+    
+    mocker.patch.object(RegexPathAnalyzer, 'analisar_caminho', return_value="analisado")
+    caminho_obj.caminho_analisado = "analisado"
+    
+    caminho_json = caminho_obj.gerar_json()
+    assert isinstance(caminho_json, str)
+    caminho_dict = json.loads(caminho_json)
+    assert caminho_dict["caminho_original"] == caminho
+    assert "id_unico" in caminho_dict
+    assert "analises_caminho" in caminho_dict
 
-
-# # Testando o método converter_para_absoluto
-# def test_converter_para_absoluto():
-#     # Caminhos válidos (você pode alterar o valor para o seu diretório)
-#     eh_relativo = "./"
-#     caminho_absoluto = CaminhoUtils.converter_para_absoluto(eh_relativo)
-#     assert caminho_absoluto == str(
-#         (Path.home() / Path(eh_relativo.lstrip("./"))).resolve()
-#     )
-
-#     # Caminhos inválidos
-#     assert CaminhoUtils.converter_para_absoluto("") == ""
-#     assert CaminhoUtils.converter_para_absoluto(None) == ""
-#     assert CaminhoUtils.converter_para_absoluto(123) == ""
-
-
-# # Testando o método gerar_resposta_json
-# def test_gerar_resposta_json():
-#     resposta = CaminhoUtils.gerar_resposta_json(
-#         mensagem="Teste de sucesso",
-#         status="SUCCESS",
-#         caminhos_validados={"./": True},
-#         caminhos_convertidos={"./": "/home/user/test"},
-#     )
-
-#     assert isinstance(resposta, str)  # A resposta deve ser uma string.
-#     assert (
-#         "mensagem" in resposta
-#     )  # Verifica se a chave "mensagem" está presente no JSON.
-#     assert "status" in resposta  # Verifica se a chave "status" está presente no JSON.
-#     assert (
-#         "dados_caminho" in resposta
-#     )  # Verifica se a chave "dados_caminho" está presente no JSON.
-#     assert (
-#         '"mensagem": "Teste de sucesso"' in resposta
-#     )  # Verifica o valor da chave "mensagem".
-
-#     # Testando o erro quando a mensagem é inválida
-#     with pytest.raises(ValueError):
-#         CaminhoUtils.gerar_resposta_json(mensagem="", status="SUCCESS")
-
-#     with pytest.raises(ValueError):
-#         CaminhoUtils.gerar_resposta_json(mensagem="Teste", status=123)
-
-
-# # Testando o filtro de caminhos validados
-# def test_filtrar_caminhos_validados():
-#     caminhos_validados = {
-#         "./": True,
-#         "../Downloads": False,
-#         "/../Downloads": True,
-#         "/./": False,
-#     }
-
-#     caminhos_validados_true = {
-#         chave: valor for chave, valor in caminhos_validados.items() if valor is True
-#     }
-
-#     assert caminhos_validados_true == {"./": True, "/../Downloads": True}
-
-
-# # Testando o filtro de caminhos convertidos
-# def test_filtrar_caminhos_convertidos():
-#     caminhos_convertidos = {
-#         "./": "/home/user/test",
-#         "../Downloads": "/home/user/Downloads",
-#         "/../Downloads": "/home/user/Downloads",
-#         "/./": "/home/user",
-#     }
-
-#     caminhos_convertidos_diferentes = {
-#         chave: valor for chave, valor in caminhos_convertidos.items() if chave != valor
-#     }
-
-#     assert caminhos_convertidos_diferentes == {
-#         "./": "/home/user/test",  # A chave é diferente do valor
-#     }
+# Testando o método _processar_caminho
+def test_processar_caminho(mocker):
+    caminho = "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html"
+    caminho_obj = CaminhoBase(caminho_bruto=caminho)
+    
+    mocker.patch.object(RegexPathAnalyzer, 'analisar_caminho', return_value="analisado")
+    caminho_obj._processar_caminho()
+    
+    assert caminho_obj.caminho_analisado == "analisado"

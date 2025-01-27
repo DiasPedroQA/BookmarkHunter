@@ -1,35 +1,125 @@
-# pylint: disable=C, R, E, W
-
-# Importações
-
-from app.services.path_services import extrair_nome_item, extrair_pasta_mae, obter_permissoes_caminho
+# pylint: disable=C0114, C0116
 
 
-def test_extrair_pasta_mae():
-    assert extrair_pasta_mae("/home/pedro-pm-dias/Downloads/Chrome/file.txt") == "Chrome"
-    assert extrair_pasta_mae("/home/pedro-pm-dias/Downloads/") == "pedro-pm-dias"
-    assert extrair_pasta_mae("/home/pedro-pm-dias/") == "home"
-    assert extrair_pasta_mae("/home/") == ""
-    assert extrair_pasta_mae("/") == ""
-    # assert extrair_pasta_mae("") is None
+import pytest
+from app.services.path_services import RegexPathAnalyzer
 
 
-def test_obter_permissoes_caminho():
-    permissoes = obter_permissoes_caminho("/home/user/docs")
-    assert permissoes == "O caminho '/home/user/docs' não existe."
-    permissoes = obter_permissoes_caminho("/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html")
-    assert permissoes == {"leitura": True, "escrita": True, "execucao": False}
-    permissoes = obter_permissoes_caminho("/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html")
-    assert permissoes == {"leitura": True, "escrita": True, "execucao": False}
-    permissoes = obter_permissoes_caminho("/home/user/docs/file.txt")
-    assert permissoes == "O caminho '/home/user/docs/file.txt' não existe."
+def test_sanitizar_caminho():
+    assert (
+        RegexPathAnalyzer.validar_e_sanitizar_caminho("/home/user/docs/")
+        == "/home/user/docs/"
+    )
+    assert (
+        RegexPathAnalyzer.validar_e_sanitizar_caminho("/home/user/docs/<>")
+        == "/home/user/docs/"
+    )
+    assert (
+        RegexPathAnalyzer.validar_e_sanitizar_caminho("C:\\User\\docs\\<>")
+        == "C:/User/docs/"
+    )
+    assert (
+        RegexPathAnalyzer.validar_e_sanitizar_caminho("C:\\User\\docs\\")
+        == "C:/User/docs/"
+    )
+    assert (
+        RegexPathAnalyzer.validar_e_sanitizar_caminho("/home/user/docs/")
+        == "/home/user/docs/"
+    )
+    with pytest.raises(ValueError):
+        RegexPathAnalyzer.validar_e_sanitizar_caminho("")
+    with pytest.raises(ValueError):
+        RegexPathAnalyzer.validar_e_sanitizar_caminho(" " * 261)
 
 
-def test_extrair_nome_item():
-    assert extrair_nome_item("/home/pedro-pm-dias/Downloads/Chrome/file.txt") == "file.txt"
-    assert extrair_nome_item("/home/pedro-pm-dias/Downloads/Chrome") == "Chrome"
-    assert extrair_nome_item("/home/user/") == "user"
-    assert extrair_nome_item("/home") == "home"
-    assert extrair_nome_item("/") is None
-    assert extrair_nome_item("") == "BookmarkHunter"
-    assert extrair_nome_item(".") == "BookmarkHunter"
+@pytest.mark.parametrize(
+    "input_path, expected_result",
+    [
+        (
+            "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
+            {"absoluto": True, "relativo": False, "arquivo": True, "pasta": False},
+        ),
+        (
+            "../../Downloads/Chrome/favoritos_23_12_2024.html",
+            {"absoluto": False, "relativo": True, "arquivo": True, "pasta": False},
+        ),
+        (
+            "/home/pedro-pm-dias/Downloads/Chrome/arquivo?*<>.html",
+            {"absoluto": True, "relativo": False, "arquivo": True, "pasta": False},
+        ),
+        (
+            "../Downloads/Chrome/imagens/arquivo?*<>.jpg",
+            {"absoluto": False, "relativo": True, "arquivo": True, "pasta": False},
+        ),
+        (
+            "/home/pedro-pm-dias/Downloads/Chrome/",
+            {"absoluto": True, "relativo": False, "arquivo": False, "pasta": True},
+        ),
+        (
+            "../../Downloads/Chrome/",
+            {"absoluto": False, "relativo": True, "arquivo": False, "pasta": True},
+        ),
+        (
+            "/home/pedro-pm-dias/Downloads/Chrome",
+            {"absoluto": True, "relativo": False, "arquivo": False, "pasta": True},
+        ),
+        (
+            "../../Downloads/Chrome/<>/",
+            {"absoluto": False, "relativo": True, "arquivo": False, "pasta": True},
+        ),
+        (
+            "file.txt",
+            {"absoluto": False, "relativo": False, "arquivo": True, "pasta": False},
+        ),
+        (
+            "/home/user/docs/file.txt",
+            {"absoluto": True, "relativo": False, "arquivo": True, "pasta": False},
+        ),
+    ],
+)
+def test_verificar_tipo_caminho(input_path: str, expected_result: dict[str, bool]):
+    result = RegexPathAnalyzer.verificar_tipo_caminho(input_path)
+    assert result == expected_result
+
+
+def test_extrair_pasta_principal():
+    assert (
+        RegexPathAnalyzer.extrair_pasta_principal("/home/user/docs/file.txt") == "docs"
+    )
+    assert RegexPathAnalyzer.extrair_pasta_principal("/home/user/docs/") == "user"
+    assert RegexPathAnalyzer.extrair_pasta_principal("/home/user/") == "home"
+    assert RegexPathAnalyzer.extrair_pasta_principal("/home/") is None
+    assert RegexPathAnalyzer.extrair_pasta_principal("/") is None
+
+
+def test_contar_diretorios():
+    assert RegexPathAnalyzer.contar_diretorios("/home/user/docs/file.txt") == 3
+    assert RegexPathAnalyzer.contar_diretorios("/home/user/docs/") == 3
+    assert RegexPathAnalyzer.contar_diretorios("/home/user/") == 2
+    assert RegexPathAnalyzer.contar_diretorios("/home/") == 1
+    assert RegexPathAnalyzer.contar_diretorios("/") == 0
+
+
+def test_analisar_caminho():
+    analisador = RegexPathAnalyzer("/home/user/docs/file.txt")
+    resultado = analisador.analisar_caminho()
+    assert resultado == {
+        "caminho_original": "/home/user/docs/file.txt",
+        "pasta_principal": "docs",
+        "numero_diretorios": 3,
+        "absoluto": True,
+        "relativo": False,
+        "arquivo": True,
+        "pasta": False,
+    }
+    analisador = RegexPathAnalyzer("../../user/docs/")
+    resultado = analisador.analisar_caminho()
+    assert resultado == {
+        "caminho_original": "../../user/docs/",
+        "pasta_principal": "user",
+        "numero_diretorios": 4,
+        "absoluto": False,
+        "relativo": True,
+        "arquivo": False,
+        "pasta": True,
+    }
