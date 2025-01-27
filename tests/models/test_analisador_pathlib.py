@@ -11,7 +11,7 @@
 
 # @pytest.fixture
 # def mock_sanitize_path():
-#     with patch("analisador_pathlib.SanitizePath") as mock_class:
+#     with patch("analisador_pathlib.CaminhoBase") as mock_class:
 #         instance = mock_class.return_value
 #         instance.formato_valido = True
 #         instance.gerar_json.return_value = json.dumps(

@@ -22,3 +22,18 @@
 # .is_symlink()	Verifica se o caminho é um link simbólico para um diretório.
 # .owner()	Retorna o proprietário do diretório (nome do usuário).
 # .group()	Retorna o grupo ao qual o diretório pertence.
+
+from models.path_model import CaminhoBase
+
+
+class Pasta(CaminhoBase):
+    """Classe para representar uma pasta."""
+
+    def __init__(self, caminho: str):
+        super().__init__(caminho)
+        self.eh_arquivo = False
+        self.eh_pasta = self.caminho_original.is_dir()
+
+        # Validação adicional para garantir que é uma pasta
+        if not self.eh_pasta:
+            raise ValueError(f"O caminho '{self.caminho_original}' não é uma pasta válida.")
