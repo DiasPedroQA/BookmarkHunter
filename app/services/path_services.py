@@ -44,7 +44,9 @@ class RegexPathAnalyzer:
         ultimo_elemento = partes[-1] if partes else ""
 
         # Identificar arquivo com base na extensão
-        e_arquivo = bool(re.search(r"\.", ultimo_elemento)) and not caminho.endswith("/")
+        e_arquivo = bool(re.search(r"\.", ultimo_elemento)) and not caminho.endswith(
+            "/"
+        )
 
         # Identificar pasta (se não for arquivo, é pasta)
         e_pasta = not e_arquivo
@@ -118,7 +120,7 @@ if __name__ == "__main__":
         print(f"[Caminho]: {caminho_teste}")
         analisador = RegexPathAnalyzer(caminho_inicial=caminho_teste)
         resultado = analisador.extrair_pasta_principal(caminho=caminho_teste)
-#         resultado = analisador.analisar_caminho()
-#         for chave, valor in resultado.items():
-#             print(f"  - {chave.replace('_', ' ').capitalize()}: {valor}")
+        #         resultado = analisador.analisar_caminho()
+        #         for chave, valor in resultado.items():
+        #             print(f"  - {chave.replace('_', ' ').capitalize()}: {valor}")
         print(f"  - {resultado}")

@@ -37,7 +37,6 @@ class CaminhoBase:
         Processa o caminho e inicializa os atributos do objeto.
         """
         self.caminho_analisado = self.analises_caminho.analisar_caminho()
-        
 
     def para_dict(self) -> Dict[str, Union[bool, int, None, str]]:
         """
@@ -46,7 +45,7 @@ class CaminhoBase:
         return {
             "caminho_original": self.caminho_original,
             "id_unico": self.obter_id_unico(self.caminho_validado),
-            "analises_caminho": RegexPathAnalyzer(self.caminho_original)
+            "analises_caminho": RegexPathAnalyzer(self.caminho_original),
         }
 
     def gerar_json(self) -> str:
