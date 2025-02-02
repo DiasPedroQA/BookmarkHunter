@@ -33,7 +33,7 @@ jobs:
 
       # Passo 2: Configurar a versão do Python com base na matriz
       - name: Configurar Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -58,7 +58,7 @@ jobs:
 
       # Passo 6: Enviar o relatório do Pylint como artefato para revisão
       - name: Enviar Relatório do Pylint
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pylint-relatorio
           path: pylint-relatorio.json
@@ -70,7 +70,7 @@ jobs:
 
       # Passo 8: Enviar relatórios de cobertura de testes como artefatos para revisão
       - name: Enviar Relatórios de Cobertura de Testes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cobertura-testes
           path: |
@@ -109,7 +109,7 @@ jobs:
 
       # Passo 5: Enviar relatórios de cobertura como artefatos
       - name: Enviar Relatórios de Cobertura
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-reports
           path: |
