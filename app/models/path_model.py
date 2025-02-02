@@ -1,85 +1,123 @@
 # app/models/analisador_string.py
-# pylint: disable=C, R, E, W
 
-import os
-import sys
+"""
+Classe para análise e manipulação de caminhos de arquivos e diretórios.
+"""
+
+import re
 import json
-from typing import Optional, Dict, Union
+import sys
 import uuid
+from pathlib import Path
+from typing import Dict, Union
 
-# Adiciona o caminho raiz do projeto ao sys.path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-if project_root not in sys.path:
-    sys.path.append(project_root)
+# Obtém o diretório raiz do projeto
+project_root = Path(__file__).resolve().parent.parent
+sys.path.append(str(project_root))
 
-# Importações
-from app.services.path_services import RegexPathAnalyzer
+from services.global_services import GeneralServices
 
 
 class CaminhoBase:
+    """
+    Representa um caminho de arquivo ou diretório, fornecendo métodos para
+    análise, validação, sanitização e extração de informações.
+    """
+
     def __init__(self, caminho_bruto: str):
         """
-        Inicializa o objeto com os atributos principais.
+        Inicializa o objeto com o caminho fornecido.
         """
-        self.caminho_original: str = caminho_bruto
-        self._processar_caminho()
+        self.caminho_original = caminho_bruto
+        self.caminho_sanitizado = self._sanitizar_caminho(caminho=self.caminho_original)
+        self.conversores = GeneralServices(caminho_inicial=self.caminho_sanitizado)
 
     @staticmethod
-    def obter_id_unico(caminho: str) -> str:
+    def _sanitizar_caminho(caminho: str) -> str:
         """
-        Gera um UUID baseado em um caminho.
+        Sanitiza o caminho, removendo caracteres inválidos e normalizando barras.
         """
-        identificador = abs(hash(caminho))
-        return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(identificador)))
+        caminho = caminho.strip()
+        if not caminho or len(caminho) > 260:
+            raise ValueError("Caminho inválido ou muito longo.")
 
-    def _processar_caminho(self):
-        """
-        Processa o caminho e inicializa os atributos do objeto.
-        """
-        self.caminho_analisado = self.analises_caminho.analisar_caminho()
+        caminho = re.sub(r"[\\/]+", "/", caminho)
+        return re.sub(r"[^a-zA-Z0-9:\- _./]", "", caminho)
 
-    def para_dict(self) -> Dict[str, Union[bool, int, None, str]]:
+    def validar_caminho(self) -> Dict[str, Union[bool, str]]:
         """
-        Converte os atributos do objeto para um dicionário.
+        Valida o caminho, verificando se é absoluto/relativo e se é arquivo/pasta.
         """
-        return {
-            "caminho_original": self.caminho_original,
-            "id_unico": self.obter_id_unico(self.caminho_validado),
-            "analises_caminho": RegexPathAnalyzer(self.caminho_original),
-        }
+        try:
+            # Converte o caminho sanitizado em um Path e resolve para absoluto
+            path = Path(self.caminho_sanitizado).resolve()
+
+            # Verifica se o caminho é absoluto ou relativo
+            tipo = "absoluto" if path.is_absolute() else "relativo"
+
+            # Verifica se é arquivo, pasta ou indefinido
+            if path.exists():
+                arquivo_ou_pasta = "arquivo" if path.is_file() else "pasta"
+            else:
+                arquivo_ou_pasta = "indefinido"
+
+            return {
+                "valido": True,
+                "tipo": tipo,
+                "arquivo_ou_pasta": arquivo_ou_pasta,
+            }
+        except (OSError, ValueError) as e:
+            return {
+                "valido": False,
+                "tipo": f"inválido (erro: {str(e)})",
+                "arquivo_ou_pasta": "indefinido",
+            }
+
+    def obter_metadados(self) -> Dict[str, Union[str, int, float]]:
+        """
+        Obtém metadados do arquivo ou diretório, como tamanho, datas de acesso, etc.
+        """
+        try:
+            path = Path(self.caminho_sanitizado)
+            if not path.exists():
+                return {"erro": "O arquivo ou diretório não existe."}
+            return {
+                "[Tamanho em bytes]": self.conversores.obter_tamanho_bytes(),
+                "[Tamanho formatado]": self.conversores.obter_tamanho_formatado(),
+                "[Último acesso]": self.conversores.obter_ultimo_acesso(),
+                "[Última modificação]": self.conversores.obter_ultima_modificacao(),
+                "[Data de criação]": self.conversores.obter_data_criacao(),
+                "[Permissões]": self.conversores.obter_permissoes(),
+                "[Sistema operacional]": self.conversores.obter_sistema_operacional(),
+            }
+        except (OSError, ValueError) as e:
+            return {"erro": f"Erro ao obter metadados: {str(e)}"}
 
     def gerar_json(self) -> str:
         """
         Gera uma representação JSON dos atributos do objeto.
         """
-        return json.dumps(self.para_dict(), indent=4, ensure_ascii=False)
+        dados = {
+            "caminho_original": self.caminho_original,
+            "id_unico": str(uuid.uuid5(uuid.NAMESPACE_DNS, self.caminho_sanitizado)),
+            "caminho_sanitizado": self.caminho_sanitizado,
+            "validacao": self.validar_caminho(),
+            "metadados": self.obter_metadados(),
+        }
+        return json.dumps(dados, indent=4, ensure_ascii=False)
 
 
-# Exemplo de uso
-# if __name__ == "__main__":
-#     tipos_de_caminhos: Dict[str, str] = {
-#         "Arquivo - Absoluto e válido": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
-#         "Arquivo - Relativo e válido": "../imagens/foto.jpg",
-#         "Arquivo - Absoluto e inválido": "/home/pedro-pm-dias/arquivo?*<>.html",
-#         "Arquivo - Relativo e inválido": "../imagens/arquivo?*<>.jpg",
-#         "Pasta - Absoluta e válida": "/home/pedro-pm-dias/Downloads/Chrome/",
-#         "Pasta - Relativa e válida": "./Downloads/Chrome/",
-#         "Pasta - Absoluta e inválida": "/home/pedro-pm-dias/Downloads/Chrome/<>/",
-#         "Pasta - Relativa e inválida": "./Downloads/Chrome/<>/",
-#     }
+if __name__ == "__main__":
+    # Lista de caminhos para teste
+    caminhos_teste = [
+        "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
+        "/home/pedro-pm-dias/Downloads/Chrome/",
+        "../../Downloads/Chrome/favoritos_23_12_2024.html",
+        "../../Downloads/Chrome/",
+    ]
 
-#     for tipo, caminho in tipos_de_caminhos.items():
-#         print(f"\nTipo do caminho: {tipo}")
-#         caminho_obj = CaminhoBase(caminho_bruto=caminho)
-#         print(caminho_obj.gerar_json())
-
-#     @staticmethod
-#     def obter_estatisticas_caminho(caminho: str) -> Dict[str, int]:
-#         """Obtém estatísticas sobre o caminho fornecido."""
-#         estatisticas = Path(caminho).stat()
-#         return {
-#             "tamanho": estatisticas.st_size,
-#             "data_acesso": RegexPathAnalyzer._obter_data_acesso(timestamp=estatisticas.st_atime),
-#             "data_criacao": RegexPathAnalyzer._obter_data_criacao(timestamp=estatisticas.st_ctime),
-#             "data_modificacao": RegexPathAnalyzer._obter_data_modificacao(timestamp=estatisticas.st_mtime),
-#         }
+    for caminho_teste in caminhos_teste:
+        print(f"\nAnalisando o caminho_teste: {caminho_teste}")
+        analisador = CaminhoBase(caminho_teste)
+        print(analisador.gerar_json())
+        print("-" * 100)

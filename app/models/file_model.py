@@ -1,159 +1,175 @@
 # app/models/file_model.py
-# pylint: disable=C, R, E, W
+# pylint: disable=C0413, E0401,
+
+"""
+Módulo de Modelo de Arquivo para manipulação de operações com arquivos.
+
+Este módulo fornece funcionalidades para gerenciar armazenamento e recuperação 
+de dados baseados em arquivo. Inclui utilitários para trabalhar com arquivos JSON, 
+manipulação de caminhos e operações no sistema de arquivos.
+
+Classes:
+    FileModel: Gerencia operações de arquivo e persistência de dados
+
+Funções:
+    Nenhuma
+
+Constantes:
+    Nenhuma
+
+Dependências:
+    - json: Para serialização/desserialização de dados JSON
+    - os: Para funcionalidades dependentes do sistema operacional
+    - pathlib.Path: Para caminhos do sistema de arquivos orientados a objeto
+    - typing: Para dicas de tipo (List, Dict, Optional)
+"""
+
+import sys
+import json
+from pathlib import Path
+from typing import Dict, List, Optional, Union
+from os import stat_result, access, R_OK, W_OK, X_OK
+from favorite_model import HtmlTag
+
+# Obtém o diretório raiz do projeto
+project_root = Path(__file__).resolve().parent.parent
+sys.path.append(str(project_root))
+
+from app.services.global_services import GeneralServices
 
 
-# import sys
-# import os
-# from pathlib import Path
-# from typing import Dict
+class InformacoesCaminho:
+    """
+    A classe `InformacoesCaminho` fornece métodos para manipulação e
+    obtenção de informações sobre caminhos de arquivos e diretórios.
+    """
 
-# # Caminho para a raiz do projeto (BookmarkHunter)
-# project_root = os.path.abspath(
-#     os.path.join(
-#         os.path.dirname(__file__), "../.."
-#     )
-# )
-# if project_root not in sys.path:
-#     sys.path.append(project_root)
+    def __init__(self, caminho_string: str):
+        """
+        Inicializa a instância com um caminho fornecido e verifica se ele existe.
 
-# # Importações
-# from models.path_model import CaminhoBase
+        Args:
+            caminho_string (str): Caminho do arquivo ou diretório.
+        """
+        self.caminho = Path(caminho_string)
+        self.conversores = GeneralServices()
+        self.tag_model = HtmlTag()
+        if not self.caminho.exists():
+            raise FileNotFoundError(f"O caminho '{caminho_string}' não existe.")
+
+    @staticmethod
+    def nomenclatura(caminho: Path) -> Dict[str, str]:
+        """Retorna informações sobre o nome, extensões, diretório pai e partes do caminho."""
+        return {
+            "nome_puro": caminho.stem,
+            "extensoes": caminho.suffixes,
+            "pai": str(caminho.parent),
+            "raiz": caminho.root,
+            "partes": list(caminho.parts),
+            "caminho_absoluto": str(caminho.absolute()),
+            "caminho_resolvido": str(caminho.resolve()),
+        }
+
+    @staticmethod
+    def validar_caminho(caminho: Path) -> Dict[str, bool]:
+        """Retorna um dicionário com validações sobre o caminho."""
+        return {
+            "eh_absoluto": "Sim" if caminho.is_absolute() else "Não",
+            "eh_arquivo": "Sim" if caminho.is_file() else "Não",
+            "eh_diretorio": "Sim" if caminho.is_dir() else "Não",
+            "existe": "Sim" if caminho.exists() else "Não",
+            "eh_link_simbolico": "Sim" if caminho.is_symlink() else "Não",
+        }
+
+    @staticmethod
+    def verificar_permissoes(caminho: Path) -> Dict[str, bool]:
+        """Verifica as permissões de leitura, escrita e execução."""
+        return {
+            "leitura": "Sim" if access(caminho, R_OK) else "Não",
+            "escrita": "Sim" if access(caminho, W_OK) else "Não",
+            "execucao": "Sim" if access(caminho, X_OK) else "Não",
+        }
+
+    def obter_estatisticas(self, caminho: Path) -> Dict[str, float]:
+        """Retorna estatísticas sobre o arquivo ou diretório."""
+        estatisticas: stat_result = caminho.stat()
+        return {
+            "tamanho": self.conversores.converter_tamanho(estatisticas.st_size),
+            "data_criacao": self.conversores.converter_timestamp(estatisticas.st_ctime),
+            "data_modificacao": self.conversores.converter_timestamp(
+                estatisticas.st_mtime
+            ),
+            "data_acesso": self.conversores.converter_timestamp(estatisticas.st_atime),
+        }
+
+    def obter_informacoes(self) -> Dict:
+        """Retorna um dicionário com todas as informações do caminho."""
+        return {
+            "nome": self.caminho.name,
+            **self.nomenclatura(self.caminho),
+            "validacoes": self.validar_caminho(self.caminho),
+            "estatisticas": self.obter_estatisticas(self.caminho),
+            "permissoes": self.verificar_permissoes(self.caminho),
+        }
+
+    def ler_arquivo_html(self, caminho_html: str) -> List[str]:
+        """Lê o conteúdo de um arquivo HTML e retorna uma lista de linhas do arquivo."""
+        try:
+            with open(caminho_html, "r", encoding="utf-8") as arquivo:
+                return arquivo.readlines()
+        except (PermissionError, UnicodeDecodeError) as e:
+            raise RuntimeError(f"Erro ao ler o arquivo: {e}") from e
+
+    def process_html_file(
+        self, file_path: str
+    ) -> List[Dict[str, Union[str, Dict[str, Optional[str]]]]]:
+        """
+        Processa um arquivo HTML e retorna os dados das tags aceitas.
+
+        Args:
+            file_path (str): Caminho do arquivo HTML.
+
+        Returns:
+            List[Dict]: Lista de dicionários com os dados das tags.
+        """
+        lines = self.ler_arquivo_html(file_path)
+        all_tags_data = []
+
+        for line in lines:
+            html_tag = HtmlTag(tag_line=line)
+            html_tag.process_line()
+            all_tags_data.extend(html_tag.get_tags_data())
+
+        return all_tags_data
+
+    def gerar_json_completo(self) -> str:
+        """Gera um JSON completo com todas as informações do caminho e as tags HTML filtradas."""
+        informacoes = self.obter_informacoes()
+
+        # Só faz a leitura e processamento das tags HTML se for um arquivo
+        if self.validar_caminho(self.caminho)["eh_arquivo"]:
+            try:
+                # conteudo_html = self.ler_arquivo_html(str(self.caminho))
+                informacoes["tags_html"] = self.process_html_file(str(self.caminho))
+            except (ValueError, RuntimeError) as e:
+                informacoes["erro"] = str(e)
+
+        return json.dumps(informacoes, indent=4, ensure_ascii=False)
 
 
-# class Arquivo(CaminhoBase):
-#     """Classe para representar um arquivo."""
-
-#     def __init__(self, caminho: str):
-#         super().__init__(caminho)
-#         self.caminho_original = Path(caminho)
-#         self.eh_arquivo = self.caminho_original.is_file()
-#         self.eh_pasta = False
-
-#         # Validação adicional para garantir que é um arquivo
-#         if not self.eh_arquivo:
-#             raise ValueError(
-#                 f"O caminho '{self.caminho_original}' não é um arquivo válido."
-#             )
-
-#     def caminho_absoluto(self) -> str:
-#         """Retorna o caminho absoluto do arquivo."""
-#         return str(self.caminho_original.absolute())
-
-#     def eh_link_simbolico(self) -> bool:
-#         """Verifica se o arquivo é um link simbólico."""
-#         return self.caminho_original.is_symlink()
-
-#     def eh_um_arquivo(self) -> bool:
-#         """Verifica se o caminho é um arquivo."""
-#         return self.caminho_original.is_file()
-
-#     def caminho_com_novo_nome(self, novo_nome: str) -> str:
-#         """Retorna um novo caminho com o mesmo diretório, mas com um novo nome."""
-#         return str(self.caminho_original.with_name(novo_nome))
-
-#     @property
-#     def nome_do_arquivo(self) -> str:
-#         """Retorna o nome do arquivo."""
-#         return self.caminho_original.name
-
-#     @property
-#     def nome_sem_extensao(self) -> str:
-#         """Retorna o nome do arquivo sem a extensão."""
-#         return self.caminho_original.stem
-
-#     def caminho_com_nova_extensao(self, nova_extensao: str) -> str:
-#         """Retorna um novo caminho com o mesmo nome, mas com uma nova extensão."""
-#         return str(self.caminho_original.with_suffix(nova_extensao))
-
-#     @property
-#     def extensao_do_arquivo(self) -> str:
-#         """Retorna a extensão do arquivo (incluindo o ponto)."""
-#         return self.caminho_original.suffix
-
-#     @property
-#     def todas_extensoes(self) -> list:
-#         """Retorna uma lista de todas as extensões do arquivo."""
-#         return self.caminho_original.suffixes
-
-#     def informacoes_do_arquivo(self):
-#         """Obtém informações sobre o arquivo."""
+# # Exemplo de uso
+# if __name__ == "__main__":
+#     tipos_de_caminhos: Dict[str, str] = {
+#         "Arquivo - Absoluto e válido": "/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html",
+#         # "Arquivo - Relativo e válido (genérico)": "../../Downloads/Chrome/copy-favoritos_23_12_2024.html",
+#     }
+#     for tipo, caminho_teste in tipos_de_caminhos.items():
+#         print(f"\nTipo do caminho: {tipo}")
 #         try:
-#             return self.caminho_original.stat()
-#         except FileNotFoundError as error:
-#             print(error)
-#             raise ValueError(f"O arquivo '{self.caminho_original}' não foi encontrado.") from error
-
-#     def caminho_resolvido(self) -> str:
-#         """Resolve o caminho absoluto, considerando links simbólicos."""
-#         try:
-#             return str(self.caminho_original.resolve(strict=True))
-#         except FileNotFoundError as error:
-#             print(error)
-#             raise ValueError(f"O arquivo '{self.caminho_original}' não foi encontrado.") from error
-
-#     def ler_conteudo_como_texto(self, encoding: str = None) -> str:
-#         """Lê o conteúdo do arquivo como texto."""
-#         try:
-#             return self.caminho_original.read_text(encoding=encoding)
-#         except FileNotFoundError as error:
-#             print(error)
-#             raise ValueError(f"O arquivo '{self.caminho_original}' não foi encontrado.") from error
-#         except UnicodeDecodeError as error:
-#             print(error)
-#             raise ValueError("Erro ao decodificar o arquivo. Verifique o encoding.") from error
-
-#     def escrever_conteudo_como_texto(self, conteudo: str, encoding: str = None) -> None:
-#         """Escreve texto no arquivo."""
-#         try:
-#             self.caminho_original.write_text(conteudo, encoding=encoding)
-#         except Exception as error:
-#             raise ValueError(f"Erro ao escrever no arquivo: {error}") from error
-
-#     def dono_do_arquivo(self) -> str:
-#         """Retorna o proprietário do arquivo."""
-#         try:
-#             return self.caminho_original.owner()
-#         except PermissionError as error:
-#             print(error)
-#             raise ValueError(
-#                 f"Permissão negada ao acessar o proprietário do arquivo '{self.caminho_original}'."
-#             ) from error
-
-#     def gerar_json(self):
-#         dados_arquivo = {
-#             "caminho_absoluto": self.caminho_absoluto(),
-#             "link_simbolico": self.eh_link_simbolico(),
-#             "eh_arquivo": self.eh_um_arquivo(),
-#             "nome_arquivo": self.nome_do_arquivo,
-#             "nome_sem_extensao": self.nome_sem_extensao,
-#             "extensao_arquivo": self.extensao_do_arquivo,
-#             "todas_extensoes": self.todas_extensoes,
-#             "informacoes_do_arquivo": self.informacoes_do_arquivo(),
-#             "caminho_resolvido": self.caminho_resolvido(),
-#             "dono_arquivo": self.dono_do_arquivo(),
-#         }
-#         dados_caminho = super().gerar_json()
-#         dados_caminho.update(dados_arquivo)
-#         return dados_caminho
-
-
-# tipos_de_caminhos: Dict[str, str] = {
-#     "Arquivo - Absoluto e válido": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_23_12_2024.html",
-#     "Arquivo - Absoluto e inválido (caracteres proibidos)": "/home/pedro-pm-dias/arquivo?*<>.html",
-#     "Arquivo - Absoluto e inválido (link simbólico)": "/home/pedro-pm-dias/Downloads/Chrome/favoritos_link_simbólico.html",
-#     "Arquivo - Absoluto e inválido (caminho inexistente)": "/home/pedro-pm-dias/Downloads/Chrome/arquivo_inexistente.html",
-#     "Arquivo - Relativo e válido (com data)": "../../Downloads/Chrome/favoritos_23_12_2024.html",
-#     "Arquivo - Relativo e válido (genérico)": "../../Downloads/Chrome/favoritos.html",
-#     "Arquivo - Relativo e inválido (caracteres proibidos)": "../imagens/arquivo?*<>.jpg",
-#     "Pasta - Absoluta e válida (Downloads)": "/home/pedro-pm-dias/Downloads/Chrome/",
-#     "Pasta - Absoluta e válida (Teste)": "/home/pedro-pm-dias/Downloads/Chrome/Teste/",
-#     "Pasta - Absoluta e inválida (caminho inexistente)": "/caminho/inexistente/",
-#     "Pasta - Relativa e válida (Downloads)": "../../Downloads/Chrome/",
-#     "Pasta - Relativa e válida (Teste)": "../../Downloads/Chrome/Teste/",
-# }
-
-# for tipo, caminho in tipos_de_caminhos.items():
-#     print(f"\nTipo do caminho: {tipo}")
-#     caminho_obj = Arquivo(caminho=caminho)
-#     data = caminho_obj.gerar_json()
-#     print(data)
+#             caminho_obj = InformacoesCaminho(caminho_string=caminho_teste)
+#             json_completo = caminho_obj.gerar_json_completo()
+#             print(json_completo)
+#         except FileNotFoundError as e:
+#             print(f"Erro: {e}")
+#         except (ValueError, RuntimeError) as e:
+#             print(f"Erro ao processar o caminho: {e}")

@@ -1,8 +1,8 @@
 # pylint: disable=C, R, E, W
 # app/services/__init__.py
 
-from .path_services import RegexPathAnalyzer
+from .global_services import GeneralServices
 
 __all__ = [
-    "RegexPathAnalyzer",
+    "GeneralServices",
 ]

@@ -1,28 +1,11 @@
-# """
-# main.py
+#  pylint: disable=C, R, E, W
 
-# Este módulo inicializa e executa a aplicação Flask.
+# from app.services.favorite_services import GeneralServices
+# from app.controllers.favorite_controller import FavoriteController
 
-# Funções:
-#     create_app: Cria e configura a aplicação Flask.
 
-# Variáveis:
-#     app: Instância da aplicação Flask.
-#     debug: Indica se a aplicação deve ser executada em modo de depuração.
+# # Exemplo de uso
+# service.add_favorite("Example", ["tag1", "tag2"])
+# favorites = controller.get_favorites()
 
-# Uso:
-#     Este script deve ser executado diretamente para iniciar a aplicação Flask.
-# """
-
-# import os
-# import logging
-# from app import create_app
-
-# logging.basicConfig(level=logging.INFO)
-
-# app = create_app()
-
-# if __name__ == "__main__":
-#     logging.info("Iniciando a aplicação Flask...")
-#     debug = os.getenv("FLASK_DEBUG", "true").lower() == "true"
-#     app.run(debug=debug, host="0.0.0.0", port=5000)
+# display_favorites(favorites)
