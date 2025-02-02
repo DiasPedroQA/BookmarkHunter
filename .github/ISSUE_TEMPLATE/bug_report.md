@@ -1,38 +1,42 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
+name: Relatório de bug
+about: Crie um relatório para nos ajudar a melhorar
+title: Botão "Enviar" não funciona na página de contato
+labels: "bug, alta prioridade"
+assignees: "carlosfernandes"
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Descreva o bug**
+O botão "Enviar" na página de contato não responde ao ser clicado, impedindo que os usuários enviem mensagens. O problema ocorre tanto em dispositivos desktop quanto mobile.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+## Passos para reproduzir
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+1. Acesse a página de contato.
+2. Preencha todos os campos do formulário (nome, e-mail, mensagem).
+3. Clique no botão "Enviar".
+4. Observe que nada acontece após o clique.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Comportamento esperado**
+Ao clicar no botão "Enviar", o formulário deveria ser enviado e o usuário deveria ser redirecionado para uma página de confirmação.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**Capturas de tela**
+![Botão "Enviar" inativo](https://exemplo.com/caminho/para/imagem.png)
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+### Desktop (por favor, complete as informações)
 
-**Additional context**
-Add any other context about the problem here.
+- SO: Windows 10
+- Navegador: Google Chrome
+- Versão: 118.0.5993.89
+
+### Smartphone (por favor, complete as informações)
+
+- Dispositivo: iPhone 12
+- SO: iOS 16.5
+- Navegador: Safari
+- Versão: 16.5
+
+## Contexto adicional
+
+- O problema começou a ocorrer após a última atualização do sistema (versão 3.2.1).
+- Testei em outros navegadores, como Firefox e Edge, e o problema persiste.
+- Não há erros visíveis no console do navegador ao clicar no botão.
