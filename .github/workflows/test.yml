@@ -20,19 +20,16 @@ jobs:
 
     steps:
       # 1. Checkout do código
-      # Esta ação baixa o código do repositório para o ambiente do GitHub Actions.
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # 2. Configuração do Python
-      # Esta ação configura a versão do Python necessária para o projeto.
+      # 2. Configuração do Python 3.10
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: "3.10"
 
       # 3. Instalação das dependências
-      # Cria um ambiente virtual, ativa-o, e instala as dependências listadas no arquivo requirements.txt.
       - name: Install dependencies
         run: |
           python -m venv .venv
@@ -41,15 +38,13 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
-      # 4. Execução dos testes
-      # Roda os testes usando pytest, com cobertura de código gerada em vários formatos.
+      # 4. Execução dos testes com pytest
       - name: Run tests with pytest
         run: |
           source .venv/bin/activate
           pytest tests/ --cov=app --cov-report=term --cov-report=html --cov-report=xml -vv
 
       # 5. Upload dos relatórios de cobertura
-      # Envia os relatórios gerados de cobertura de código como artefatos para o GitHub Actions.
       - name: Upload coverage reports
         uses: actions/upload-artifact@v3
         with:
