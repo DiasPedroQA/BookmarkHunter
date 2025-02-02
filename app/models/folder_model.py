@@ -2,6 +2,8 @@
 
 # pylint: disable=C, R, E, W
 
+# from models.path_model import CaminhoBase
+
 
 # Tabela 2: Dados de uma Pasta (Diretório)
 # Método/Propriedade	Descrição
@@ -23,7 +25,6 @@
 # .owner()	Retorna o proprietário do diretório (nome do usuário).
 # .group()	Retorna o grupo ao qual o diretório pertence.
 
-# from models.path_model import CaminhoBase
 
 
 # class Pasta(CaminhoBase):

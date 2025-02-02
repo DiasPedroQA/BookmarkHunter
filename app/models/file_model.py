@@ -1,5 +1,5 @@
 # app/models/file_model.py
-# pylint: disable=C0413, E0401,
+# pylint: disable=C, R, E, W
 
 """
 Módulo de Modelo de Arquivo para manipulação de operações com arquivos.

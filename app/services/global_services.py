@@ -53,7 +53,7 @@ class GeneralServices:
         tamanho_convertido = tamanho_bytes / (fator_conversao**indice)
         return f"{tamanho_convertido:.2f} {unidades[indice]}"
 
-    def _obter_estatisticas_caminho(self) -> stat_result:
+    def _estatisticas_caminho(self) -> stat_result:
         """
         Retorna as estatísticas do caminho fornecido.
         Levanta FileNotFoundError se o caminho não existir.
@@ -62,41 +62,35 @@ class GeneralServices:
             raise FileNotFoundError("O arquivo ou diretório não existe.")
         return self.caminho.stat()
 
-    def obter_tamanho_bytes(self) -> int:
-        """
-        Retorna o tamanho do arquivo ou diretório em bytes.
-        """
-        return self._obter_estatisticas_caminho().st_size
-
     def obter_tamanho_formatado(self) -> str:
         """
         Retorna o tamanho do arquivo ou diretório formatado em uma unidade legível.
         """
-        return self._converter_tamanho(self.obter_tamanho_bytes())
+        return self._converter_tamanho(self._estatisticas_caminho().st_size)
 
     def obter_ultimo_acesso(self) -> str:
         """
         Retorna a data e hora do último acesso ao arquivo ou diretório.
         """
-        return self._formatar_timestamp(self._obter_estatisticas_caminho().st_atime)
+        return self._formatar_timestamp(self._estatisticas_caminho().st_atime)
 
     def obter_ultima_modificacao(self) -> str:
         """
         Retorna a data e hora da última modificação do arquivo ou diretório.
         """
-        return self._formatar_timestamp(self._obter_estatisticas_caminho().st_mtime)
+        return self._formatar_timestamp(self._estatisticas_caminho().st_mtime)
 
     def obter_data_criacao(self) -> str:
         """
         Retorna a data e hora de criação do arquivo ou diretório.
         """
-        return self._formatar_timestamp(self._obter_estatisticas_caminho().st_ctime)
+        return self._formatar_timestamp(self._estatisticas_caminho().st_ctime)
 
     def obter_permissoes(self) -> str:
         """
         Retorna as permissões do arquivo ou diretório no formato octal.
         """
-        return oct(self._obter_estatisticas_caminho().st_mode)
+        return oct(self._estatisticas_caminho().st_mode)
 
     def obter_sistema_operacional(self) -> str:
         """
@@ -109,9 +103,8 @@ class GeneralServices:
         Obtém todos os metadados do arquivo ou diretório.
         """
         try:
-            estatisticas = self._obter_estatisticas_caminho()
+            estatisticas = self._estatisticas_caminho()
             return {
-                "tamanho_bytes": estatisticas.st_size,
                 "tamanho_formatado": self._converter_tamanho(estatisticas.st_size),
                 "ultimo_acesso": self._formatar_timestamp(estatisticas.st_atime),
                 "ultima_modificacao": self._formatar_timestamp(estatisticas.st_mtime),
@@ -119,12 +112,8 @@ class GeneralServices:
                 "permissoes": oct(estatisticas.st_mode),
                 "sistema_operacional": self.obter_sistema_operacional(),
             }
-        except FileNotFoundError:
-            return {"erro": "O arquivo ou diretório não existe."}
-        except PermissionError:
-            return {"erro": "Permissão negada para acessar o arquivo ou diretório."}
-        except OSError as e:
-            return {"erro": f"Erro ao obter metadados: {str(e)}"}
+        except FileNotFoundError as exc:
+            raise FileNotFoundError("O arquivo ou diretório não existe.") from exc
 
 
 if __name__ == "__main__":
@@ -139,7 +128,6 @@ if __name__ == "__main__":
 
         # Testa cada método individualmente
         try:
-            print(f"[Tamanho em bytes]: {analisador.obter_tamanho_bytes()}")
             print(f"[Tamanho formatado]: {analisador.obter_tamanho_formatado()}")
             print(f"[Último acesso]: {analisador.obter_ultimo_acesso()}")
             print(f"[Última modificação]: {analisador.obter_ultima_modificacao()}")

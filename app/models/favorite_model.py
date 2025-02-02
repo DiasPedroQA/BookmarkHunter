@@ -1,5 +1,6 @@
 # app/models/favorite_model.py
-# pylint: disable=C0413, C0301, C0103
+# pylint: disable=C, R, E, W
+
 
 """
 Este módulo define a classe `HtmlTag`, que representa uma tag HTML com seus atributos e conteúdo.
@@ -177,7 +178,6 @@ class HtmlTag:
 #         html_tag = HtmlTag(tag_line=line)
 #         html_tag.process_line()
 #         all_tags_data.extend(html_tag.get_tags_data())
-
 #     return all_tags_data
 
 

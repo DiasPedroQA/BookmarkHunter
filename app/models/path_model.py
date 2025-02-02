@@ -1,4 +1,5 @@
 # app/models/analisador_string.py
+# pylint: disable=C, R, E, W
 
 """
 Classe para análise e manipulação de caminhos de arquivos e diretórios.
