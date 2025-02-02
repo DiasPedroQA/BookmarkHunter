@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Code Quality and Testing
+name: Qualidade de Código e Testes
 
 on:
   push:
@@ -17,42 +17,55 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Lint and Test Python Code
+  lint_and_test:
+    name: Lint, Testar e Verificar Código Python
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]  # Adicionando Python 3.11
     steps:
-      - name: Checkout Repository
+      # Passo 1: Fazer checkout do repositório
+      - name: Fazer Checkout do Repositório
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      # Passo 2: Configurar a versão do Python com base na matriz
+      - name: Configurar Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Dependencies
+      # Passo 3: Adicionar o Conda ao caminho do sistema se necessário
+      - name: Adicionar Conda ao Caminho do Sistema
+        run: |
+          echo $CONDA/bin >> $GITHUB_PATH
+
+      # Passo 4: Instalar dependências do requirements.txt, environment.yml e ferramentas
+      - name: Instalar Dependências
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest pylint
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f environment.yml ]; then conda env update --file environment.yml --name base; fi
 
-      - name: Lint with Flake8
+      # Passo 5: Lintar o código Python com Flake8 para verificações de estilo e complexidade
+      - name: Lintar com Flake8
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Run Pylint Analysis
+      # Passo 6: Rodar a análise do Pylint para verificações mais profundas de qualidade de código
+      - name: Rodar Análise com Pylint
         run: |
-          pylint $(git ls-files '*.py') --fail-under=7 --output-format=json > pylint-report.json
+          pylint $(git ls-files '*.py') --fail-under=7 --output-format=json > pylint-relatorio.json
 
-      - name: Upload Pylint Report
+      # Passo 7: Enviar o relatório do Pylint como artefato para revisão
+      - name: Enviar Relatório do Pylint
         uses: actions/upload-artifact@v3
         with:
-          name: pylint-report
-          path: pylint-report.json
+          name: pylint-relatorio
+          path: pylint-relatorio.json
 
-      - name: Test with Pytest
+      # Passo 8: Rodar os testes com Pytest para verificar as unidades de código
+      - name: Testar com Pytest
         run: |
-          pytest
+          pytest --maxfail=1 --disable-warnings -q
