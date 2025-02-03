@@ -2,6 +2,7 @@
 
 """Controller para verificar caminhos de pastas."""
 
+
 from models.folder_path_check import FolderPathCheck
 
 

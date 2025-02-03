@@ -14,8 +14,15 @@ def main():
     path = "/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
 
     # Exemplo de uso do PathCheckController
-    path_check = PathCheckController(path)
-    print(f"O caminho existe? {path_check.check_exists()}")
+    try:
+        path_check = PathCheckController(path)
+        print(f"O caminho existe? {path_check.check_exists()}")
+        if path_check.validate_path():
+            print("Caminho válido!")
+            print("Caminho absoluto:", path_check.get_absolute_path())
+            print("Metadados:", path_check.get_path_timing())
+    except (FileNotFoundError, PermissionError, ValueError) as e:
+        print(f"Erro: {e}")
 
     # Exemplo de uso do FilePathCheckController
     file_check = FilePathCheckController(path)
