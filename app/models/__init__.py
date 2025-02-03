@@ -3,12 +3,13 @@ Este modelo de arquivo inicializa os objetos usados.
 """
 
 
-# from .folder_model import FolderModel
-from .file_model import InformacoesCaminho
-from .favorite_model import HtmlTag
+from .path_check import PathCheck
+from .file_path_check import FilePathCheck
+from .folder_path_check import FolderPathCheck
 
 
 __all__ = [
-    "InformacoesCaminho",
-    "HtmlTag"
+    "PathCheck",
+    "FilePathCheck",
+    "FolderPathCheck",
 ]
