@@ -1,28 +1,37 @@
-name: Python Package using venv
+name: Python CI Pipeline - Lint, Test, and Coverage
 
 on:
   push:
     branches:
-      - main # Ou o nome da branch principal do seu projeto
+      - main
+      - dev
   pull_request:
     branches:
-      - main # Ou o nome da branch principal do seu projeto
+      - main
+      - dev
+
+permissions:
+  contents: read
 
 jobs:
-  build-linux:
+  lint_and_test:
+    name: Lint, Test, and Coverage (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"] # Suporte para várias versões do Python
     steps:
-      # Checkout do repositório
-      - uses: actions/checkout@v4
+      # Passo 1: Fazer checkout do repositório
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      # Configuração do Python 3.10
-      - name: Set up Python 3.10
+      # Passo 2: Configurar a versão do Python com base na matriz
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
 
-      # Cache das dependências para acelerar a instalação
+      # Passo 3: Cache das dependências do pip para otimização
       - name: Cache pip dependencies
         id: pip-cache
         uses: actions/cache@v3
@@ -32,52 +41,115 @@ jobs:
           restore-keys: |
             pip-${{ runner.os }}-
 
-      # Criando e ativando o ambiente virtual
+      # Passo 4: Criar e ativar ambiente virtual
       - name: Set up venv
         run: |
-          python -m venv venv
-          source venv/bin/activate
+          python -m venv .venv
+          source .venv/bin/activate
 
-      # Instalando as dependências
-      - name: Install dependencies
+      # Passo 5: Instalar dependências e ferramentas
+      - name: Install Dependencies
         run: |
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pylint pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      # Linting com flake8
-      - name: Lint with flake8
+      # Passo 6: Lintar o código com Flake8
+      - name: Lint with Flake8
         run: |
-          source venv/bin/activate
-          pip install flake8
+          source .venv/bin/activate
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      # Testes com pytest
-      - name: Test with pytest
+      # Passo 7: Rodar análise de qualidade com Pylint
+      - name: Run Pylint Analysis
         run: |
-          source venv/bin/activate
-          pip install pytest
-          pytest
+          source .venv/bin/activate
+          pylint $(git ls-files '*.py') --fail-under=7 --output-format=json > pylint-report.json
 
-      # Geração de relatório de cobertura de testes (opcional)
-      - name: Generate coverage report
-        run: |
-          source venv/bin/activate
-          pip install pytest-cov
-          pytest --cov=your_package_name --cov-report=xml
-
-      # Upload do relatório de cobertura para Codecov (opcional)
-      - name: Upload coverage to Codecov
-        if: success()
-        uses: codecov/codecov-action@v3
+      # Passo 8: Enviar relatório do Pylint como artefato
+      - name: Upload Pylint Report
+        uses: actions/upload-artifact@v4
         with:
-          file: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
+          name: pylint-report-${{ matrix.python-version }}
+          path: pylint-report.json
 
-      # Limpeza do ambiente virtual (opcional)
+      # Passo 9: Rodar testes com Pytest e gerar relatório de cobertura
+      - name: Run Tests with Pytest
+        run: |
+          source .venv/bin/activate
+          pytest --cov=app --cov-report=term --cov-report=html --cov-report=xml -vv
+
+      # Passo 10: Enviar relatórios de cobertura como artefatos
+      - name: Upload Coverage Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports-${{ matrix.python-version }}
+          path: |
+            htmlcov/
+            coverage.xml
+
+      # Passo 11: Limpar ambiente virtual (opcional)
       - name: Clean up venv
         run: |
-          rm -rf venv
+          rm -rf .venv
+
+  # Pipeline adicional para execução de testes e cobertura em uma versão específica do Python
+  ci_pipeline:
+    name: CI Pipeline - Tests and Coverage (Python 3.10)
+    runs-on: ubuntu-latest
+    steps:
+      # Passo 1: Fazer checkout do repositório
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Passo 2: Configurar Python 3.10
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      # Passo 3: Cache das dependências do pip
+      - name: Cache pip dependencies
+        id: pip-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
+      # Passo 4: Criar e ativar ambiente virtual
+      - name: Set up venv
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+
+      # Passo 5: Instalar dependências
+      - name: Install Dependencies
+        run: |
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      # Passo 6: Rodar testes com Pytest e gerar relatórios de cobertura
+      - name: Run Tests with Pytest
+        run: |
+          source .venv/bin/activate
+          pytest tests/ --cov=app --cov-report=term --cov-report=html --cov-report=xml -vv
+
+      # Passo 7: Enviar relatórios de cobertura como artefatos
+      - name: Upload Coverage Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports-python-3.10
+          path: |
+            htmlcov/
+            coverage.xml
+
+      # Passo 8: Limpar ambiente virtual (opcional)
+      - name: Clean up venv
+        run: |
+          rm -rf .venv
