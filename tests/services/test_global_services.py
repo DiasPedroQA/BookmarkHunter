@@ -5,6 +5,10 @@ import pytest
 from pathlib import Path
 from app.services.global_services import GeneralServices
 
+caminho_verdadeiro: str = (
+    "/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
+)
+
 
 # Testes para o método __init__
 def test_init_com_caminho_valido():
@@ -27,7 +31,7 @@ def test_init_com_caminho_invalido():
     assert servico.caminho_existe is False
 
 
-def test_init_com_caminho_invalido():
+def test_init_com_caminho_inexistente():
     servico = GeneralServices(caminho_inicial="/caminho/inexistente")
     assert servico.caminho_existe is False
 
@@ -52,15 +56,15 @@ def test_converter_tamanho_em_mb():
 
 
 def test_converter_tamanho_unidade_invalida():
-    with pytest.raises(ValueError, match="Unidade inválida. Use uma das seguintes:"):
+    with pytest.raises(
+        ValueError, match="Unidade inválida. Use uma das seguintes:"
+    ):
         GeneralServices._converter_tamanho(1500, "INVALIDO")
 
 
 # Testes para o método _estatisticas_caminho
 def test_estatisticas_caminho_valido():
-    servico = GeneralServices(
-        caminho_inicial="/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
-    )
+    servico = GeneralServices(caminho_inicial=caminho_verdadeiro)
     estatisticas = servico._estatisticas_caminho()
     assert estatisticas.st_size == 43973  # Tamanho do arquivo de teste
 
@@ -73,17 +77,13 @@ def test_estatisticas_caminho_invalido():
 
 # Testes para o método obter_tamanho_formatado
 def test_obter_tamanho_formatado():
-    servico = GeneralServices(
-        caminho_inicial="/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
-    )
+    servico = GeneralServices(caminho_inicial=caminho_verdadeiro)
     assert servico.obter_tamanho_formatado() == "42.94 KB"
 
 
 # Testes para o método obter_ultimo_acesso
 def test_obter_ultimo_acesso():
-    servico = GeneralServices(
-        caminho_inicial="/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
-    )
+    servico = GeneralServices(caminho_inicial=caminho_verdadeiro)
     resultado = servico.obter_ultimo_acesso()
     assert isinstance(resultado, str)
     assert len(resultado) == 19  # Formato "dd/mm/aaaa HH:MM:SS"
@@ -91,9 +91,7 @@ def test_obter_ultimo_acesso():
 
 # Testes para o método obter_ultima_modificacao
 def test_obter_ultima_modificacao():
-    servico = GeneralServices(
-        caminho_inicial="/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
-    )
+    servico = GeneralServices(caminho_inicial=caminho_verdadeiro)
     resultado = servico.obter_ultima_modificacao()
     assert isinstance(resultado, str)
     assert len(resultado) == 19  # Formato "dd/mm/aaaa HH:MM:SS"
@@ -101,9 +99,7 @@ def test_obter_ultima_modificacao():
 
 # Testes para o método obter_data_criacao
 def test_obter_data_criacao():
-    servico = GeneralServices(
-        caminho_inicial="/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
-    )
+    servico = GeneralServices(caminho_inicial=caminho_verdadeiro)
     resultado = servico.obter_data_criacao()
     assert isinstance(resultado, str)
     assert len(resultado) == 19  # Formato "dd/mm/aaaa HH:MM:SS"
@@ -111,9 +107,7 @@ def test_obter_data_criacao():
 
 # Testes para o método obter_permissoes
 def test_obter_permissoes():
-    servico = GeneralServices(
-        caminho_inicial="/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
-    )
+    servico = GeneralServices(caminho_inicial=caminho_verdadeiro)
     permissoes = servico.obter_permissoes()
     assert permissoes.startswith("0o")  # Permissões no formato octal
 
@@ -127,9 +121,7 @@ def test_obter_sistema_operacional():
 
 # Testes para o método obter_metadados
 def test_obter_metadados_arquivo():
-    servico = GeneralServices(
-        caminho_inicial="/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
-    )
+    servico = GeneralServices(caminho_inicial=caminho_verdadeiro)
     metadados = servico.obter_metadados()
     assert "tamanho_formatado" in metadados
     assert "ultimo_acesso" in metadados
@@ -138,8 +130,7 @@ def test_obter_metadados_arquivo():
     assert "permissoes" in metadados
     assert "sistema_operacional" in metadados
 
-
-# def test_obter_metadados_caminho_invalido():
+    # def test_obter_metadados_caminho_invalido():
     with pytest.raises(OSError, match="O arquivo ou diretório não existe."):
         GeneralServices(caminho_inicial="/home/../caminho/inexistente")
         # metadados = servico.obter_metadados()

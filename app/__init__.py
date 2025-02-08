@@ -5,7 +5,11 @@ Arquivo __init__.py do pacote app.
 # from flask import Flask, jsonify, request
 # from app.routes.routes import routes
 # from app.controllers.path_control import Path_Controller
-# from app.controllers.file_control import listar_arquivos, criar_arquivo, deletar_arquivo
+# from app.controllers.file_control import (
+#     listar_arquivos,
+#     criar_arquivo,
+#     deletar_arquivo
+# )
 
 # def create_app():
 #     """

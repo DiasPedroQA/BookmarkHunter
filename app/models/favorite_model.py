@@ -3,24 +3,36 @@
 
 
 # """
-# Este módulo define a classe `HtmlTag`, que representa uma tag HTML com seus atributos e conteúdo.
+# Este módulo define a classe `HtmlTag`,
+# que representa uma tag HTML com seus atributos e conteúdo.
 
 # A classe oferece métodos para:
 # - Processar e converter os atributos das tags,
-# incluindo a conversão de timestamps para um formato de data e hora brasileiro.
+# incluindo a conversão de timestamps para
+# um formato de data e hora brasileiro.
 # - Serializar as tags em formato de dicionário e JSON,
 # excluindo atributos específicos (como 'ICON').
 # - Manipular tags HTML específicas, como `<h3>` e `<a>`,
 # com a extração e formatação adequada de seus atributos e conteúdo.
 
 # Funções principais:
-# - `convert_timestamp`: Converte um timestamp em segundos para o formato de data e hora brasileiro.
-# - `process_attributes`: Processa os atributos de uma tag, realizando a conversão de timestamps e filtragem.
-# - `para_dict`: Converte uma instância de `HtmlTag` em um dicionário, pronto para serialização em JSON.
+# - `convert_timestamp`: Converte um timestamp em segundos para
+# o formato de data e hora brasileiro.
+# - `process_attributes`: Processa os atributos de uma tag,
+# realizando a conversão de timestamps e filtragem.
+# - `para_dict`: Converte uma instância de `HtmlTag` em um dicionário,
+# pronto para serialização em JSON.
 # - `para_json`: Serializa a tag para uma string JSON formatada.
 
 # Exemplo de uso:
-#     html_tag = HtmlTag("a", {"href": "https://example.com", "add_date": "1609459200"}, "Example Link")
+#     html_tag = HtmlTag(
+#         "a",
+#         {
+#             "href": "https://example.com",
+#             "add_date": "1609459200"
+#         },
+#         "Example Link"
+#     )
 #     print(html_tag.para_json())
 
 # Este módulo é útil para aplicações que necessitam processar e

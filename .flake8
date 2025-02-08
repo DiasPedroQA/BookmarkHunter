@@ -1,0 +1,31 @@
+[flake8]
+# Aumenta o limite de caracteres por linha para 100
+max-line-length = 100
+
+# Ignora erros específicos (opcional)
+ignore =
+    E203,
+    E266,
+    W503,
+    E501,
+
+# Exclui diretórios ou arquivos específicos (opcional)
+exclude =
+    .venv,
+    .git,
+    __pycache__,
+    migrations,
+    tests,
+    docs
+
+# Define o diretório raiz para análise (opcional)
+per-file-ignores =
+    # Ignora regras específicas para arquivos específicos
+    app/__init__.py:E402  # Ignora "module level import not at top of file" no __init__.py
+
+# Habilita plugins adicionais (opcional)
+# Por exemplo, para verificar imports e complexidade de código
+# plugins =
+#     flake8-import-order,
+#     flake8-comprehensions,
+#     flake8-bugbear
