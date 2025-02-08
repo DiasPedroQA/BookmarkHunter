@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"] # Suporte para várias versões do Python
+        python-version: ["3.10", "3.11"] # Suporte para várias versões do Python
     steps:
       # Passo 1: Fazer checkout do repositório
       - name: Checkout Repository
