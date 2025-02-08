@@ -1,7 +1,7 @@
 # tests/services/test_global_services.py
 # pylint: disable=C, R, E, W
 
-import pytest
+
 from pathlib import Path
 from app.services.global_services import GeneralServices
 

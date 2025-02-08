@@ -4,10 +4,10 @@ max-line-length = 100
 
 # Ignora erros específicos (opcional)
 ignore =
-    E203,
-    E266,
-    W503,
-    E501,
+    E203,  # Ignora espaços antes de ':' (comum em listas e dicionários)
+    E266,  # Ignora "too many leading '#' for block comment"
+    W503,  # Ignora "line break before binary operator" (compatível com Black)
+    E501,  # Ignora "line too long" (já que aumentamos o limite para 100)
 
 # Exclui diretórios ou arquivos específicos (opcional)
 exclude =
@@ -25,7 +25,7 @@ per-file-ignores =
 
 # Habilita plugins adicionais (opcional)
 # Por exemplo, para verificar imports e complexidade de código
-# plugins =
-#     flake8-import-order,
-#     flake8-comprehensions,
-#     flake8-bugbear
+plugins =
+    flake8-import-order,
+    flake8-comprehensions,
+    flake8-bugbear

@@ -100,7 +100,14 @@
 #             element (Tag): Elemento HTML a ser processado.
 
 #         Returns:
-#             Dict[str, Union[str, Dict[str, Union[str, None]]]]: Dicionário com os dados da tag.
+#             Dict[
+    # str, Union[
+        # str,
+        # Dict[str,
+        # Union[str, None]
+        # ]
+        # ]
+        # ]: Dicionário com os dados da tag.
 #         """
 #         tag_data = {
 #             "tag": element.name,

@@ -23,7 +23,7 @@ class FolderPathCheck(PathCheck):
             and not self.path.is_symlink()  # Evita links simbólicos
             and self.is_readable()  # Verifica se pode ser lido
             and self.is_writable()  # Verifica se pode ser escrito
-            and self.is_not_empty_folder()  # Verifica se a pasta não está vazia
+            and self.is_not_empty_folder()  # Checa se a pasta não está vazia
         )
 
     def is_not_empty_folder(self):

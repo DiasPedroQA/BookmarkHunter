@@ -64,7 +64,8 @@ class GeneralServices:
 
     def obter_tamanho_formatado(self) -> str:
         """
-        Retorna o tamanho do arquivo ou diretório formatado em uma unidade legível.
+        Retorna o tamanho do arquivo ou diretório
+        formatado em uma unidade legível.
         """
         return self._converter_tamanho(self._estatisticas_caminho().st_size)
 

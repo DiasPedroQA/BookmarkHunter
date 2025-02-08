@@ -15,7 +15,9 @@ def main():
     """
     Função principal.
     """
-    path = "/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
+    path = (
+        "/home/pedro-pm-dias/Downloads/Chrome/copy-favoritos_23_12_2024.html"
+    )
 
     # Exemplo de uso do PathCheckController
     try:

@@ -1,7 +1,7 @@
 # pylint: disable=C0114, C0115, C0116, E0401
 
 from pathlib import Path
-import pytest
+import pytest # type: ignore
 from app.models.folder_path_check import FolderPathCheck
 
 

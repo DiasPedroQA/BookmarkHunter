@@ -1,7 +1,7 @@
 # pylint: disable=C0114, C0115, C0116, E0401
 
 from unittest.mock import patch
-import pytest
+import pytest # type: ignore
 from app.controllers.path_check_controller import PathCheckController
 
 

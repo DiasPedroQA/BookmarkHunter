@@ -39,7 +39,10 @@ def display_favorites(favorites: List[Dict]):
 #     },
 #     {
 #         "tag": "a",
-#         "attributes": {"href": "https://web.whatsapp.com/", "add_date": "1728516875"},
+#         "attributes": {
+#             "href": "https://web.whatsapp.com/",
+#             "add_date": "1728516875"
+#         },
 #         "content": "WhatsApp",
 #     },
 #     {

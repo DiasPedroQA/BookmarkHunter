@@ -5,9 +5,18 @@
 # routes = Blueprint("routes", __name__)
 
 # # Rotas de arquivos
-# routes.route("/arquivos", methods=["GET"])(arquivo_controller.listar_arquivos)
-# routes.route("/arquivos", methods=["POST"])(arquivo_controller.criar_arquivo)
-# routes.route("/arquivos/<int:id>", methods=["DELETE"])(arquivo_controller.deletar_arquivo)
+# routes.route(
+#     "/arquivos",
+#     methods=["GET"]
+# )(arquivo_controller.listar_arquivos)
+# routes.route(
+#     "/arquivos",
+#     methods=["POST"]
+# )(arquivo_controller.criar_arquivo)
+# routes.route(
+#     "/arquivos/<int:id>",
+#     methods=["DELETE"]
+# )(arquivo_controller.deletar_arquivo)
 
 # # Rota para analisar caminhos
 # routes = Blueprint("routes", __name__)
