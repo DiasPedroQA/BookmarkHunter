@@ -2,12 +2,15 @@ name: Python Package using venv
 
 on:
   push:
+    branches:
+      - main # Ou o nome da branch principal do seu projeto
+  pull_request:
+    branches:
+      - main # Ou o nome da branch principal do seu projeto
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
 
     steps:
       # Checkout do repositório
@@ -19,6 +22,16 @@ jobs:
         with:
           python-version: "3.10"
 
+      # Cache das dependências para acelerar a instalação
+      - name: Cache pip dependencies
+        id: pip-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
       # Criando e ativando o ambiente virtual
       - name: Set up venv
         run: |
@@ -29,6 +42,7 @@ jobs:
       - name: Install dependencies
         run: |
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
 
       # Linting com flake8
@@ -45,3 +59,25 @@ jobs:
           source venv/bin/activate
           pip install pytest
           pytest
+
+      # Geração de relatório de cobertura de testes (opcional)
+      - name: Generate coverage report
+        run: |
+          source venv/bin/activate
+          pip install pytest-cov
+          pytest --cov=your_package_name --cov-report=xml
+
+      # Upload do relatório de cobertura para Codecov (opcional)
+      - name: Upload coverage to Codecov
+        if: success()
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+
+      # Limpeza do ambiente virtual (opcional)
+      - name: Clean up venv
+        run: |
+          rm -rf venv

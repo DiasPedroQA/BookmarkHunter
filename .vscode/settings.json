@@ -183,6 +183,6 @@
   "github-actions.workflows.pinned.workflows": [],
   "python.REPL.enableREPLSmartSend": false,
   "wolf.disableHotModeWarning": true,
-  "CodeGPT.apiKey": "CodeGPT Plus Beta",
+  "CodeGPT.apiKey": "CodeGPT Plus",
   "python.analysis.extraPaths": ["./app/views/file_"]
 }
