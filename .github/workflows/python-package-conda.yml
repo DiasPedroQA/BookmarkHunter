@@ -25,15 +25,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Passo 2: Configurar a versão do Python com base na matriz
+      # Passo 2: Configurar a versão do Python
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Passo 3: Cache das dependências do pip para otimização
+      # Passo 3: Cache das dependências do pip
       - name: Cache pip dependencies
-        id: pip-cache
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
@@ -47,7 +46,7 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
 
-      # Passo 5: Instalar dependências e ferramentas
+      # Passo 5: Instalar dependências
       - name: Install Dependencies
         run: |
           source .venv/bin/activate
@@ -95,7 +94,7 @@ jobs:
         run: |
           rm -rf .venv
 
-  # Pipeline adicional para execução de testes e cobertura em uma versão específica do Python
+  # Pipeline adicional para execução de testes e cobertura em Python 3.10
   ci_pipeline:
     name: CI Pipeline - Tests and Coverage (Python 3.10)
     runs-on: ubuntu-latest
@@ -112,7 +111,6 @@ jobs:
 
       # Passo 3: Cache das dependências do pip
       - name: Cache pip dependencies
-        id: pip-cache
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
@@ -131,8 +129,7 @@ jobs:
         run: |
           source .venv/bin/activate
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
+          pip install -r requirements.txt pytest pytest-cov
 
       # Passo 6: Rodar testes com Pytest e gerar relatórios de cobertura
       - name: Run Tests with Pytest
