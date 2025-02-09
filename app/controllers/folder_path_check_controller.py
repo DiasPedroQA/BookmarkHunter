@@ -5,7 +5,7 @@ Controller para verificar caminhos de pastas.
 """
 
 
-from models.folder_path_check import FolderPathCheck
+from app.models.folder_path_check import FolderPathCheck
 
 
 class FolderPathCheckController:
@@ -24,9 +24,7 @@ class FolderPathCheckController:
         Valida a pasta com base nos critérios definidos na FolderPathCheck.
         """
         if not self.folder_path_check.is_a_real_folder():
-            raise ValueError(
-                f"A pasta '{self.folder_path_check.path}' não é válida."
-            )
+            raise ValueError(f"A pasta '{self.folder_path_check.path}' não é válida.")
         return True
 
     def is_a_real_folder(self):

@@ -4,7 +4,7 @@
 Classe para verificar se o caminho é um arquivo válido.
 """
 
-from models.path_check import PathCheck
+from app.models.path_check import PathCheck
 
 
 class FilePathCheck(PathCheck):

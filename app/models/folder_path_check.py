@@ -4,7 +4,7 @@
 Classe para verificar caminhos de pastas.
 """
 
-from models.path_check import PathCheck
+from app.models.path_check import PathCheck
 
 
 class FolderPathCheck(PathCheck):
@@ -43,7 +43,5 @@ class FolderPathCheck(PathCheck):
         Retorna o tamanho total da pasta somando os arquivos dentro.
         """
         return sum(
-            file.stat().st_size
-            for file in self.path.iterdir()
-            if file.is_file()
+            file.stat().st_size for file in self.path.iterdir() if file.is_file()
         )

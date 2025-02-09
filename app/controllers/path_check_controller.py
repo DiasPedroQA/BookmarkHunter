@@ -5,7 +5,7 @@ Controller para verificar a validade de um caminho e suas propriedades.
 """
 
 
-from models.path_check import PathCheck
+from app.models.path_check import PathCheck
 
 
 class PathCheckController:
@@ -61,9 +61,7 @@ class PathCheckController:
             raise FileNotFoundError("Caminho não encontrado.")
 
         if not self.is_readable_and_writable():
-            raise PermissionError(
-                "Permissões insuficientes para leitura e/ou escrita."
-            )
+            raise PermissionError("Permissões insuficientes para leitura e/ou escrita.")
 
         if not self.is_not_symlink():
             raise ValueError("O caminho não pode ser um link simbólico.")

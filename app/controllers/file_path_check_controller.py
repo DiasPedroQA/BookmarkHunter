@@ -4,7 +4,7 @@
 Controller para verificar se o caminho fornecido é um arquivo válido.
 """
 
-from models.file_path_check import FilePathCheck
+from app.models.file_path_check import FilePathCheck
 
 
 class FilePathCheckController:
